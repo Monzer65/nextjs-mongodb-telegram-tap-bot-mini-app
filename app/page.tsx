@@ -6,8 +6,10 @@ import Image from "next/image";
 
 export default function Home() {
   const [coinCount, setCoinCount] = useState(1000);
-  const [coinPerTap, setCoinPerTap] = useState(100);
+  const [coinPerTap, setCoinPerTap] = useState(10);
+  const [energy, setEnergy] = useState(2532);
   const coinRef = useRef<HTMLDivElement>(null);
+  const lastClickTimeRef = useRef<number>(Date.now());
 
   const getCoordinatesFromEvent = (
     event: MouseEvent<HTMLDivElement> | TouchEvent<HTMLDivElement>
@@ -25,7 +27,11 @@ export default function Home() {
   const handleCoinClick = (
     event: MouseEvent<HTMLDivElement> | TouchEvent<HTMLDivElement>
   ) => {
+    if (energy - coinPerTap < 0) {
+      return;
+    }
     setCoinCount(coinCount + coinPerTap);
+    setEnergy(energy - coinPerTap < 0 ? 0 : energy - coinPerTap);
     const { x, y } = getCoordinatesFromEvent(event);
 
     if (coinRef.current) {
@@ -57,6 +63,9 @@ export default function Home() {
 
       coinRef.current.appendChild(numberElement);
     }
+
+    // Update the last click time
+    lastClickTimeRef.current = Date.now();
   };
 
   const handleCoinMouseUp = () => {
@@ -64,8 +73,20 @@ export default function Home() {
       coinRef.current.style.transform = `scale(1)`;
     }
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentTime = Date.now();
+      if (currentTime - lastClickTimeRef.current >= 1000) {
+        setEnergy((prevEnergy) => Math.min(prevEnergy + 10, 6500));
+      }
+    }, 1000); // Check every second
+
+    return () => clearInterval(interval); // Clear interval on component unmount
+  }, []);
+
   return (
-    <div className={`flex flex-col items-center`}>
+    <div className={`flex flex-col items-center max-w-[850px] m-auto`}>
       <header
         className={`w-full flex justify-between items-center px-4 py-2 bg-gray-200 shadow-md`}
       >
@@ -87,7 +108,7 @@ export default function Home() {
           onTouchStart={handleCoinClick}
           onMouseUp={handleCoinMouseUp}
           onTouchEnd={handleCoinMouseUp}
-          className='relative w-[60vw] rounded-full'
+          className='relative max-w-[60vw] rounded-full'
         >
           <Image
             src='/coin.jpg'
@@ -99,7 +120,14 @@ export default function Home() {
           />
         </div>
       </div>
-      <div className='h-screen w-full bg-red-400'></div>
+      <div className='flex gap-4 px-4 py-2 rounded-md bg-black w-[200px]'>
+        <span className='text-white text-2xl font-bold block w-[75px]'>
+          {energy}
+        </span>
+        <span className='text-white text-large opacity-75 w-[75px]'>
+          / 6500
+        </span>
+      </div>
     </div>
   );
 }
