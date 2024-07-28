@@ -1,5 +1,5 @@
 "use client";
-import { MouseEvent, TouchEvent, useEffect, useRef, useState } from "react";
+import { MouseEvent, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { CurrencyYenIcon } from "@heroicons/react/24/outline";
 
@@ -11,22 +11,11 @@ export default function Main() {
   const coinRef = useRef<HTMLDivElement>(null);
   const lastClickTimeRef = useRef<number>(Date.now());
 
-  const getCoordinatesFromEvent = (
-    event: MouseEvent<HTMLDivElement> | TouchEvent<HTMLDivElement>
-  ) => {
-    if ("touches" in event) {
-      // Touch event
-      const touch = event.touches[0];
-      return { x: touch.pageX, y: touch.pageY };
-    } else {
-      // Mouse event
-      return { x: event.pageX, y: event.pageY };
-    }
+  const getCoordinatesFromEvent = (event: MouseEvent<HTMLDivElement>) => {
+    return { x: event.pageX, y: event.pageY };
   };
 
-  const handleCoinClick = (
-    event: MouseEvent<HTMLDivElement> | TouchEvent<HTMLDivElement>
-  ) => {
+  const handleCoinClick = (event: MouseEvent<HTMLDivElement>) => {
     if (energy - coinPerTap < 0) {
       return;
     }
@@ -95,7 +84,6 @@ export default function Main() {
         <div
           ref={coinRef}
           onMouseDown={handleCoinClick}
-          onTouchStart={handleCoinClick}
           onMouseUp={handleCoinMouseUp}
           onTouchEnd={handleCoinMouseUp}
           className='relative max-w-[60vw] rounded-full'
