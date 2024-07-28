@@ -9,7 +9,7 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const webApp = window.Telegram.WebApp;
+      const webApp = (window as any).Telegram.WebApp;
       const user = webApp.initDataUnsafe?.user;
       setUser(user);
       console.log(user);
