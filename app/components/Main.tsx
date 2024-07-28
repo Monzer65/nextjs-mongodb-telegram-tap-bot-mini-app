@@ -83,7 +83,7 @@ export default function Main() {
     }, 1000); // Check every second
 
     return () => clearInterval(interval); // Clear interval on component unmount
-  }, []);
+  }, [maxEnergyToGo]);
 
   return (
     <div className={`flex flex-col items-center max-w-[850px] m-auto`}>
