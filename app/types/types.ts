@@ -66,3 +66,9 @@ export interface IWebApp {
     ) => void;
   };
 }
+
+export interface IClickType {
+  id: number;
+  x: number;
+  y: number;
+}

@@ -10,7 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 
-export function NavLinks() {
+function NavLinks() {
   const pathname = usePathname();
 
   return (
@@ -79,3 +79,5 @@ export function NavLinks() {
     </nav>
   );
 }
+
+export default NavLinks;
