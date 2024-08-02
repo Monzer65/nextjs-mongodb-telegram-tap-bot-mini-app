@@ -5,7 +5,7 @@ export async function POST(request: Request) {
     const bodyText = await request.text();
     const messageObj = JSON.parse(bodyText);
 
-    console.log("messageObj:", messageObj?.message);
+    // console.log("messageObj:", messageObj?.message);
     const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
     if (!telegramBotToken) throw new Error("Telegram token not provided");
 
