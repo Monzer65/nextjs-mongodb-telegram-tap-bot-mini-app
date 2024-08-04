@@ -2,8 +2,6 @@
 
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useTelegram } from "../contexts/TelegramProvider";
 import LoadingSpinner from "./LoadingSpinner";
 import NavLinks from "./NavigationBar";
@@ -11,16 +9,26 @@ import LevelProgress from "./LevelProgress";
 import EnergyProgress from "./EnergyProgress";
 import { CurrencyYenIcon } from "@heroicons/react/24/outline";
 import { IClickType } from "../types/types";
+import { useCounterStore } from "@/providers/counter-store-provider";
 
 const BotMain = () => {
   const { user, webApp } = useTelegram();
 
+  const {
+    count,
+    coinsPerClick,
+    currentEnergy,
+    maxEnergyLevel,
+    incrementCount,
+    decrementCurrentEnergy,
+    incrementCurrentEnergy,
+  } = useCounterStore((state) => state);
+
   const [clickList, setClickList] = useState<IClickType[]>([]);
-  const [totalCoins, setTotalCoins] = useState(0);
-  const [coinsPerClick, setCoinsPerClick] = useState(1);
-  const [currentEnergy, setCurrentEnergy] = useState(1);
-  const [maxEnergyLevel, setMaxEnergyLevel] = useState(500);
-  const [playerLeague, setPlayerLeague] = useState("Novice Navigator");
+  // const [totalCoins, setTotalCoins] = useState(0);
+  // const [coinsPerClick, setCoinsPerClick] = useState(1);
+  // const [currentEnergy, setCurrentEnergy] = useState(1);
+  // const [maxEnergyLevel, setMaxEnergyLevel] = useState(500);
 
   const levelNames = useMemo(
     () => [
@@ -56,8 +64,10 @@ const BotMain = () => {
     }, 100);
 
     setClickList([...clickList, { id: Date.now(), x: e.pageX, y: e.pageY }]);
-    setTotalCoins((prev) => prev + coinsPerClick);
-    setCurrentEnergy((prev) => Math.max(prev - coinsPerClick, 0));
+    // setTotalCoins((prev) => prev + coinsPerClick);
+    incrementCount();
+    decrementCurrentEnergy();
+    // setCurrentEnergy((prev) => Math.max(prev - coinsPerClick, 0));
   };
 
   const handleAnimationEnd = (id: number) => {
@@ -65,20 +75,23 @@ const BotMain = () => {
   };
 
   useEffect(() => {
+    if (currentEnergy === maxEnergyLevel) return;
     const interval = setInterval(() => {
-      setCurrentEnergy((prev) => {
-        const newEnergy = Math.min(prev + coinsPerClick, maxEnergyLevel);
-        return newEnergy;
-      });
+      // setCurrentEnergy((prev) => {
+      //   const newEnergy = Math.min(prev + coinsPerClick, maxEnergyLevel);
+      //   return newEnergy;
+      // });
+      incrementCurrentEnergy();
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [coinsPerClick, maxEnergyLevel]);
+  }, [currentEnergy, maxEnergyLevel, incrementCurrentEnergy]);
 
   const calculateLevelAndProgress = useCallback(
     (coins: number): { level: number; progress: number } => {
       const levelMinPoints = [
-        0, 50, 150, 300, 600, 1200, 2400, 4800, 9600, 19200,
+        0, 3162, 10000, 31623, 1000000, 316227, 1000000, 3162277, 10000000,
+        100000000,
       ];
       let currentLevel = 0;
       for (let i = 0; i < levelMinPoints.length; i++) {
@@ -99,11 +112,6 @@ const BotMain = () => {
     []
   );
 
-  useEffect(() => {
-    const { level } = calculateLevelAndProgress(totalCoins);
-    setPlayerLeague(levelNames[level]);
-  }, [totalCoins, levelNames, calculateLevelAndProgress]);
-
   const renderContent = () => {
     // if (!user) {
     //   return <LoadingSpinner />;
@@ -111,21 +119,23 @@ const BotMain = () => {
 
     if (webApp?.platform === "tdesktop-" || webApp?.platform === "weba-") {
       return (
-        <div className='bg-slate-700 text-white text-4xl text-center p-4 h-screen'>
+        <div className='bg-slate-700 text-white text-4xl text-center p-4 min-h-screen'>
           Not working on Desktop! <br />
           Please use Telegram Mobile App
         </div>
       );
     }
 
-    const { level, progress } = calculateLevelAndProgress(totalCoins);
+    const { level, progress } = calculateLevelAndProgress(count);
 
     return (
-      <div className='max-w-[850px] m-auto bg-gray-800'>
-        <div className=' text-white font-bold p-4'>
-          <div className=''>
-            <p className='text-sm'>Welcome {user?.first_name}</p>
-          </div>
+      <div className='bg-gray-800 min-h-screen'>
+        {/* fixed */}
+        <div className=' text-white p-4'>
+          <p className='text-sm'>
+            Welcome{" "}
+            <span className='font-bold'>{user?.first_name.toUpperCase()}</span>{" "}
+          </p>
 
           <LevelProgress
             currentLevel={level}
@@ -134,10 +144,11 @@ const BotMain = () => {
           />
         </div>
 
+        {/* fixed */}
         <div className=''>
           <div className='flex items-center justify-center gap-2 text-4xl text-yellow-500 font-bold'>
             <CurrencyYenIcon className='w-8' />
-            {totalCoins}
+            {count}
           </div>
 
           <Image
@@ -156,27 +167,25 @@ const BotMain = () => {
           currentEnergy={currentEnergy}
           maxEnergyLevel={maxEnergyLevel}
         />
+
         {/* fixed */}
         <NavLinks />
 
         {/* fixed */}
-        {clickList.map((click) => {
-          const randomX = Math.floor(Math.random() * 21) - 10;
-          return (
-            <div
-              key={click.id}
-              className='absolute text-5xl font-bold opacity-0 text-yellow-500 pointer-events-none z-10'
-              style={{
-                top: `${click.y - 42}px`,
-                left: `${click.x - 28}px`,
-                animation: `float 1s ease-out`,
-              }}
-              onAnimationEnd={() => handleAnimationEnd(click.id)}
-            >
-              {coinsPerClick}
-            </div>
-          );
-        })}
+        {clickList.map((click) => (
+          <div
+            key={click.id}
+            className='absolute text-5xl font-bold opacity-0 text-yellow-500 pointer-events-none z-10'
+            style={{
+              top: `${click.y - 42}px`,
+              left: `${click.x - 28}px`,
+              animation: `float 1s ease-out`,
+            }}
+            onAnimationEnd={() => handleAnimationEnd(click.id)}
+          >
+            {coinsPerClick}
+          </div>
+        ))}
       </div>
     );
   };
