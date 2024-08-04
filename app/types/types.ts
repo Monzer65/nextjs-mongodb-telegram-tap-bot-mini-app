@@ -72,3 +72,13 @@ export interface IClickType {
   x: number;
   y: number;
 }
+
+export interface IBooster {
+  id: number;
+  name: string;
+  image: string;
+  cost: number;
+  level: number;
+  disabled: boolean;
+  onClick?: (cost: number) => void;
+}

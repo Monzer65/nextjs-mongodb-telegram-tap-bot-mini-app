@@ -15,20 +15,17 @@ const BotMain = () => {
   const { user, webApp } = useTelegram();
 
   const {
-    count,
+    totalCoins,
     coinsPerClick,
     currentEnergy,
     maxEnergyLevel,
-    incrementCount,
+    chargingSpeed,
+    incrementTotalCoins,
     decrementCurrentEnergy,
     incrementCurrentEnergy,
   } = useCounterStore((state) => state);
 
   const [clickList, setClickList] = useState<IClickType[]>([]);
-  // const [totalCoins, setTotalCoins] = useState(0);
-  // const [coinsPerClick, setCoinsPerClick] = useState(1);
-  // const [currentEnergy, setCurrentEnergy] = useState(1);
-  // const [maxEnergyLevel, setMaxEnergyLevel] = useState(500);
 
   const levelNames = useMemo(
     () => [
@@ -64,10 +61,8 @@ const BotMain = () => {
     }, 100);
 
     setClickList([...clickList, { id: Date.now(), x: e.pageX, y: e.pageY }]);
-    // setTotalCoins((prev) => prev + coinsPerClick);
-    incrementCount();
+    incrementTotalCoins(coinsPerClick);
     decrementCurrentEnergy();
-    // setCurrentEnergy((prev) => Math.max(prev - coinsPerClick, 0));
   };
 
   const handleAnimationEnd = (id: number) => {
@@ -77,15 +72,17 @@ const BotMain = () => {
   useEffect(() => {
     if (currentEnergy === maxEnergyLevel) return;
     const interval = setInterval(() => {
-      // setCurrentEnergy((prev) => {
-      //   const newEnergy = Math.min(prev + coinsPerClick, maxEnergyLevel);
-      //   return newEnergy;
-      // });
-      incrementCurrentEnergy();
+      incrementCurrentEnergy(chargingSpeed);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [currentEnergy, maxEnergyLevel, incrementCurrentEnergy]);
+  }, [
+    currentEnergy,
+    maxEnergyLevel,
+    chargingSpeed,
+    coinsPerClick,
+    incrementCurrentEnergy,
+  ]);
 
   const calculateLevelAndProgress = useCallback(
     (coins: number): { level: number; progress: number } => {
@@ -126,7 +123,7 @@ const BotMain = () => {
       );
     }
 
-    const { level, progress } = calculateLevelAndProgress(count);
+    const { level, progress } = calculateLevelAndProgress(totalCoins);
 
     return (
       <div className='bg-gray-800 min-h-screen'>
@@ -148,7 +145,7 @@ const BotMain = () => {
         <div className=''>
           <div className='flex items-center justify-center gap-2 text-4xl text-yellow-500 font-bold'>
             <CurrencyYenIcon className='w-8' />
-            {count}
+            {totalCoins}
           </div>
 
           <Image
