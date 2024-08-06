@@ -33,7 +33,7 @@ export async function POST(request: Request) {
           response = await sendPhoto(
             chatId,
             "https://images.unsplash.com/photo-1658243762592-d3ff6f8a9a29?q=80&w=1498&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            "Please tap the button below to Enter into the app!",
+            "Please tap the button below to Enter the app!",
             keyboard,
             telegramBotToken
           );

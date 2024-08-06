@@ -9,7 +9,7 @@ import LevelProgress from "./LevelProgress";
 import EnergyProgress from "./EnergyProgress";
 import { CurrencyYenIcon } from "@heroicons/react/24/outline";
 import { IClickType } from "../types/types";
-import { useCounterStore } from "@/providers/counter-store-provider";
+import { useBalanceStore } from "@/providers/balance-store-provider";
 
 const BotMain = () => {
   const { user, webApp } = useTelegram();
@@ -23,7 +23,125 @@ const BotMain = () => {
     incrementTotalCoins,
     decrementCurrentEnergy,
     incrementCurrentEnergy,
-  } = useCounterStore((state) => state);
+    incrementMaxEnergyLevel,
+    setMultitapCost,
+    setMultitapLevel,
+    setRechargeSpeedCost,
+    setRechargeSpeedLevel,
+    setEnergyLimitCost,
+    setEnergyLimitLevel,
+    setDefaultTotalCoins,
+    setDefaultmaxEnergyLevel,
+    setDefaultlastFreeEnergyTime,
+    setDefaultmultitapCost,
+    setDefaultmultitapLevel,
+    setDefaultrechargeSpeedCost,
+    setDefaultrechargeSpeedLevel,
+    setDefaultenergyLimitCost,
+    setDefaultenergyLimitLevel,
+  } = useBalanceStore((state) => state);
+
+  const getCloudStorageItems = useCallback(
+    (keys: string[]) => {
+      return new Promise((resolve, reject) => {
+        webApp?.CloudStorage.getItems(keys, (err, values) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(values);
+          }
+        });
+      });
+    },
+    [webApp?.CloudStorage]
+  );
+
+  type BalanceStateStrings = {
+    totalCoins: string;
+    coinsPerClick: string;
+    currentEnergy: string;
+    chargingSpeed: string;
+    maxEnergyLevel: string;
+    freeEnergyClicks: string;
+    lastFreeEnergyTime: string;
+    multitapCost: string;
+    multitapLevel: string;
+    rechargeSpeedCost: string;
+    rechargeSpeedLevel: string;
+    energyLimitCost: string;
+    energyLimitLevel: string;
+  };
+
+  const getInitialDataFromCloud = useCallback(async () => {
+    try {
+      const values = (await getCloudStorageItems([
+        "totalCoins",
+        "maxEnergyLevel",
+        "freeEnergyClicks",
+        "lastFreeEnergyTime",
+        "multitapCost",
+        "multitapLevel",
+        "rechargeSpeedCost",
+        "rechargeSpeedLevel",
+        "energyLimitCost",
+        "energyLimitLevel",
+      ])) as BalanceStateStrings;
+
+      console.log("vals:", values);
+
+      if (values) {
+        // Parse and set each value using store functions
+        if (values.totalCoins !== undefined) {
+          setDefaultTotalCoins(parseInt(values.totalCoins) || 0); // equivalent to incrementTotalCoins
+        }
+        if (values.maxEnergyLevel !== undefined) {
+          setDefaultmaxEnergyLevel(parseInt(values.maxEnergyLevel) || 500);
+        }
+        // if (values.freeEnergyClicks !== undefined) {
+        //   incrementFreeEnergyClicks(values.freeEnergyClicks || 0);
+        // }
+        // if (values.lastFreeEnergyTime !== undefined) {
+        //   setLastFreeEnergyTime(values.lastFreeEnergyTime || Date.now());
+        // }
+        if (values.multitapCost !== undefined) {
+          setDefaultmultitapCost(parseInt(values.multitapCost) || 10);
+        }
+        if (values.multitapLevel !== undefined) {
+          setDefaultmultitapLevel(parseInt(values.multitapLevel) || 1);
+        }
+        if (values.rechargeSpeedCost !== undefined) {
+          setDefaultrechargeSpeedCost(parseInt(values.rechargeSpeedCost) || 20);
+        }
+        if (values.rechargeSpeedLevel !== undefined) {
+          setDefaultrechargeSpeedLevel(
+            parseInt(values.rechargeSpeedLevel) || 1
+          );
+        }
+        if (values.energyLimitCost !== undefined) {
+          setDefaultenergyLimitCost(parseInt(values.energyLimitCost) || 30);
+        }
+        if (values.energyLimitLevel !== undefined) {
+          setDefaultenergyLimitLevel(parseInt(values.energyLimitLevel) || 1);
+        }
+      }
+    } catch (error) {
+      console.error("error loading cloud storage data");
+    }
+  }, [
+    setDefaultTotalCoins,
+    setDefaultmaxEnergyLevel,
+    setDefaultmultitapCost,
+    setDefaultmultitapLevel,
+    setDefaultrechargeSpeedCost,
+    setDefaultrechargeSpeedLevel,
+    setDefaultenergyLimitCost,
+    setDefaultenergyLimitLevel,
+    getCloudStorageItems,
+  ]);
+
+  useEffect(() => {
+    getInitialDataFromCloud();
+  }, [getInitialDataFromCloud]);
 
   const [clickList, setClickList] = useState<IClickType[]>([]);
 
@@ -110,9 +228,9 @@ const BotMain = () => {
   );
 
   const renderContent = () => {
-    // if (!user) {
-    //   return <LoadingSpinner />;
-    // }
+    if (!user) {
+      return <LoadingSpinner />;
+    }
 
     if (webApp?.platform === "tdesktop-" || webApp?.platform === "weba-") {
       return (

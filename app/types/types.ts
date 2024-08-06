@@ -80,5 +80,8 @@ export interface IBooster {
   cost: number;
   level: number;
   disabled: boolean;
-  onClick?: (cost: number) => void;
+  loading?: boolean;
+  successMessage?: string;
+  errorMessage?: string;
+  onClick: (cost: number) => void;
 }

@@ -1,14 +1,19 @@
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import NavLinks from "@/app/components/NavigationBar";
-import { useCounterStore } from "@/providers/counter-store-provider";
+import { useBalanceStore } from "@/providers/balance-store-provider";
 import {
   ChevronRightIcon,
+  CurrencyDollarIcon,
   LockClosedIcon,
+  LockOpenIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { IBooster } from "@/app/types/types";
+import { useTelegram } from "@/app/contexts/TelegramProvider";
+import { BalanceActions, BalanceState } from "@/stores/balance";
 
 const BoostPage = () => {
   const {
@@ -16,9 +21,6 @@ const BoostPage = () => {
     maxEnergyLevel,
     freeEnergyClicks,
     lastFreeEnergyTime,
-    incrementFreeEnergyClicks,
-    setLastFreeEnergyTime,
-    incrementChargingSpeed,
     multitapCost,
     multitapLevel,
     rechargeSpeedCost,
@@ -26,6 +28,9 @@ const BoostPage = () => {
     energyLimitCost,
     energyLimitLevel,
     decrementTotalCoins,
+    incrementFreeEnergyClicks,
+    setLastFreeEnergyTime,
+    incrementChargingSpeed,
     incrementMaxEnergyLevel,
     incrementCoinsPerClick,
     incrementCurrentEnergy,
@@ -35,7 +40,9 @@ const BoostPage = () => {
     setRechargeSpeedLevel,
     setEnergyLimitCost,
     setEnergyLimitLevel,
-  } = useCounterStore((state) => state);
+  } = useBalanceStore((state) => state);
+
+  const { user, webApp } = useTelegram();
 
   const initialBoosters: IBooster[] = [
     {
@@ -43,12 +50,20 @@ const BoostPage = () => {
       name: "Free Energy",
       image: "/solar-energy.gif",
       cost: 0,
-      level: 1,
+      level: freeEnergyClicks,
       disabled: false,
-      onClick: () => {
-        incrementCurrentEnergy(maxEnergyLevel);
-        incrementFreeEnergyClicks();
-        setLastFreeEnergyTime();
+      onClick: async () => {
+        showLoadingMessage("Using Free Energy booster...");
+        try {
+          incrementCurrentEnergy(maxEnergyLevel);
+          incrementFreeEnergyClicks();
+          setLastFreeEnergyTime();
+          await updateCloudStorage("freeEnergyClicks", freeEnergyClicks + 1);
+          await updateCloudStorage("lastFreeEnergyTime", Date.now());
+          showSuccessMessage("Free Energy booster used successfully!");
+        } catch (error) {
+          showErrorMessage("Failed to use Free Energy booster.");
+        }
       },
     },
     {
@@ -58,9 +73,21 @@ const BoostPage = () => {
       cost: multitapCost,
       level: multitapLevel,
       disabled: totalCoins < multitapCost,
-      onClick: (cost: number) => {
-        decrementTotalCoins(cost);
-        incrementCoinsPerClick(1);
+      onClick: async (cost: number) => {
+        showLoadingMessage("Upgrading Multitap booster...");
+        try {
+          decrementTotalCoins(cost);
+          incrementCoinsPerClick(1);
+          await updateCloudStorage("totalCoins", totalCoins - cost);
+          await updateCloudStorage("multitapLevel", multitapLevel + 1);
+          await updateCloudStorage(
+            "multitapCost",
+            Math.floor(multitapCost + multitapCost * 1.2)
+          );
+          showSuccessMessage("Multitap booster upgraded successfully!");
+        } catch (error) {
+          showErrorMessage("Failed to upgrade Multitap booster.");
+        }
       },
     },
     {
@@ -71,8 +98,10 @@ const BoostPage = () => {
       level: rechargeSpeedLevel,
       disabled: totalCoins < rechargeSpeedCost,
       onClick: (cost: number) => {
+        showLoadingMessage("Upgrading Recharge Speed booster...");
         decrementTotalCoins(cost);
         incrementChargingSpeed();
+        showSuccessMessage("Recharge Speed booster upgraded successfully!");
       },
     },
     {
@@ -83,23 +112,49 @@ const BoostPage = () => {
       level: energyLimitLevel,
       disabled: totalCoins < energyLimitCost,
       onClick: (cost: number) => {
+        showLoadingMessage("Upgrading Energy Limit booster...");
         decrementTotalCoins(cost);
         incrementMaxEnergyLevel(500);
+        showSuccessMessage("Energy Limit booster upgraded successfully!");
       },
     },
   ];
+
+  const updateCloudStorage = (key: string, value: any) => {
+    return new Promise((resolve, reject) => {
+      webApp?.CloudStorage.setItem(key, value.toString(), (err, success) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(success);
+        }
+      });
+    });
+  };
 
   const [boosters, setBoosters] = useState<IBooster[]>(initialBoosters);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBooster, setSelectedBooster] = useState<IBooster | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const [message, setMessage] = useState<{
+    id: number;
+    text: string;
+    type: string;
+  } | null>(null);
+
+  const showMessage = (text: string, type: string) => {
+    const id = Date.now();
+    setMessage({ id, text, type });
+    setTimeout(() => {
+      setMessage(null);
+    }, 5000);
+  };
+
+  const showLoadingMessage = (text: string) => showMessage(text, "loading");
+  const showSuccessMessage = (text: string) => showMessage(text, "success");
+  const showErrorMessage = (text: string) => showMessage(text, "error");
 
   useEffect(() => {
-    console.log(
-      "freeEnergyClicks and lastFreeEnergyTime",
-      freeEnergyClicks,
-      lastFreeEnergyTime
-    );
     const now = Date.now();
     setBoosters((prevBoosters) =>
       prevBoosters.map((booster) => {
@@ -176,87 +231,154 @@ const BoostPage = () => {
     }
   };
 
+  const now = Date.now();
+  const twoHoursInSeconds = 2 * 60 * 60;
+
+  const [timeRemaining, setTimeRemaining] = useState(() => {
+    const timeElapsed = Math.floor((now - lastFreeEnergyTime) / 1000); // Convert to seconds
+    return Math.max(twoHoursInSeconds - timeElapsed, 0); // Ensure it doesn't go negative
+  });
+
+  useEffect(() => {
+    const timerInterval = setInterval(() => {
+      setTimeRemaining((prevTime) => {
+        if (prevTime <= 0) {
+          clearInterval(timerInterval);
+          // Perform actions when the timer reaches zero
+          console.log("Countdown complete!");
+          return 0;
+        } else {
+          return prevTime - 1; // Decrease by 1 second
+        }
+      });
+    }, 1000);
+
+    return () => clearInterval(timerInterval); // Cleanup interval on component unmount
+  }, []);
+
+  const formatTime = (timeInSeconds: number) => {
+    const hours = Math.floor(timeInSeconds / 3600);
+    const minutes = Math.floor((timeInSeconds % 3600) / 60);
+    const seconds = timeInSeconds % 60;
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  };
+
   return (
-    <div className='bg-gray-800 min-h-screen grid gap-4 place-items-center p-8'>
-      <h2 className='text-white text-center mb-8'>
-        Your Balance <br />
-        <span className='font-bold text-4xl'>{totalCoins}</span>
-      </h2>
-
-      <h1 className='text-white font-bold'>Boosters</h1>
-
-      {boosters.map((booster) => (
-        <div
-          key={booster.id}
-          className={`flex justify-between items-center bg-gray-300 rounded-md shadow-md min-w-[250px] max-w-[400px] p-2 cursor-pointer ${
-            booster.disabled ? "opacity-50" : ""
-          }`}
-          onClick={() => !booster.disabled && handleBoosterClick(booster)}
-        >
-          <div className='flex items-center gap-2'>
-            <Image
-              src={booster.image}
-              alt={booster.name}
-              width={50}
-              height={50}
-              className='rounded-md object-fill'
-            />
-            <div>
-              <p>{booster.name}</p>
-              <div className='flex items-center text-yellow-600'>
-                <LockClosedIcon className='w-5' />
-                <p>
-                  <span className='font-bold'>{booster.cost}</span>{" "}
-                  <span className='text-gray-700 text-sm'>
-                    lvl {booster.level}
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-          <ChevronRightIcon className='w-8' />
-        </div>
-      ))}
-
-      {isModalOpen && selectedBooster && (
-        <div
-          className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'
-          onClick={handleCloseModal}
-        >
-          <div ref={modalRef} className='bg-white rounded-md p-6 relative'>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className='absolute top-2 right-2'
+    <div className='bg-gray-100 min-h-screen'>
+      <div className='flex flex-col items-center justify-center space-y-4 py-4'>
+        <h1 className='text-2xl font-bold'>Boosters</h1>
+        <div className='flex flex-col space-y-4'>
+          {boosters.map((booster) => (
+            <div
+              key={booster.id}
+              className={`relative p-4 border rounded-lg shadow-md cursor-pointer bg-white ${
+                booster.disabled ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              onClick={() => !booster.disabled && handleBoosterClick(booster)}
             >
-              <XMarkIcon className='w-6' />
-              <span className='sr-only'>Close modal</span>
-            </button>
-            <div className='grid place-items-center'>
               <Image
-                src={selectedBooster.image}
-                alt={selectedBooster.name}
-                width={50}
-                height={50}
-                className='rounded-md object-fill'
+                src={booster.image}
+                alt={booster.name}
+                width={64}
+                height={64}
+                className='mx-auto mb-2'
               />
-              <p>You want to upgrade the {selectedBooster.name} booster</p>
-              <p>
-                Cost to upgrade:{" "}
-                <span className='text-yellow-500 font-bold'>
-                  {selectedBooster.cost}
-                </span>
-              </p>
-              <button
-                onClick={handleConfirmUpgrade}
-                className='mt-4 px-4 py-2 bg-blue-500 text-white rounded'
-              >
-                Upgrade
-              </button>
+              <h2 className='text-center text-lg font-semibold'>
+                {booster.name}
+              </h2>
+              <p className='text-center text-sm'>Cost: {booster.cost}</p>
+              <p className='text-center text-sm'>Level: {booster.level}</p>
+              {booster.id === 1 && booster.disabled && (
+                <div className='absolute inset-0 flex items-center justify-center bg-white bg-opacity-75'>
+                  <div className='text-center'>
+                    <p className='text-sm'>Next free energy in:</p>
+                    <p className='text-lg font-semibold'>
+                      {formatTime(timeRemaining)}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        {isModalOpen && (
+          <div
+            className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'
+            onClick={handleCloseModal}
+          >
+            <div
+              ref={modalRef}
+              className='bg-white p-6 rounded-lg shadow-lg max-w-md w-full'
+            >
+              <h2 className='text-xl font-bold mb-4'>Upgrade Booster</h2>
+              {selectedBooster && (
+                <div>
+                  <p className='mb-2'>
+                    Are you sure you want to upgrade the{" "}
+                    <strong>{selectedBooster.name}</strong> booster to level{" "}
+                    <strong>{selectedBooster.level + 1}</strong> for{" "}
+                    <strong>{selectedBooster.cost}</strong> coins?
+                  </p>
+                  <div className='flex justify-end space-x-4'>
+                    <button
+                      className='px-4 py-2 bg-gray-300 text-gray-700 rounded-md'
+                      onClick={() => setIsModalOpen(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className='px-4 py-2 bg-blue-500 text-white rounded-md'
+                      onClick={handleConfirmUpgrade}
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+        )}
+        <div className='fixed top-2 left-0 p-4'>
+          {message && (
+            <div
+              key={message.id}
+              className={`p-2 text-white rounded text-xs ${
+                message.type === "loading"
+                  ? "bg-blue-500 flex items-center"
+                  : message.type === "success"
+                  ? "bg-green-500"
+                  : "bg-red-500"
+              }`}
+            >
+              {message.type === "loading" && (
+                <svg
+                  className='w-5 h-5 mr-3 text-white animate-spin'
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                >
+                  <circle
+                    className='opacity-25'
+                    cx='12'
+                    cy='12'
+                    r='10'
+                    stroke='currentColor'
+                    strokeWidth='4'
+                  ></circle>
+                  <path
+                    className='opacity-75'
+                    fill='currentColor'
+                    d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.963 7.963 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                  ></path>
+                </svg>
+              )}
+              {message.text}
+            </div>
+          )}
         </div>
-      )}
-
+      </div>
       <NavLinks />
     </div>
   );
