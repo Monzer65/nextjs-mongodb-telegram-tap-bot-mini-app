@@ -144,7 +144,6 @@ const BotMain = () => {
   }, [getInitialDataFromCloud]);
 
   const [clickList, setClickList] = useState<IClickType[]>([]);
-
   const levelNames = useMemo(
     () => [
       "Novice Navigator",

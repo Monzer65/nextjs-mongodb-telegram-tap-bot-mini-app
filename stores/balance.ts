@@ -133,5 +133,8 @@ export const createBalanceStore = (
       set(() => ({ energyLimitLevel: num })),
     setDefaultRechargeSpeedCost: (num: number) =>
       set(() => ({ rechargeSpeedCost: num })),
+    reset: () => {
+      set(defaultInitState);
+    },
   }));
 };

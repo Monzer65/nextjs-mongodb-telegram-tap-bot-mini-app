@@ -14,247 +14,250 @@ import Image from "next/image";
 import { IBooster } from "@/app/types/types";
 import { useTelegram } from "@/app/contexts/TelegramProvider";
 import { BalanceActions, BalanceState } from "@/stores/balance";
+import { useAtom } from "jotai";
+import { coinsAtom } from "@/app/components/Coin";
 
 const BoostPage = () => {
-  const {
-    totalCoins,
-    maxEnergyLevel,
-    freeEnergyClicks,
-    lastFreeEnergyTime,
-    multitapCost,
-    multitapLevel,
-    rechargeSpeedCost,
-    rechargeSpeedLevel,
-    energyLimitCost,
-    energyLimitLevel,
-    decrementTotalCoins,
-    incrementFreeEnergyClicks,
-    setLastFreeEnergyTime,
-    incrementChargingSpeed,
-    incrementMaxEnergyLevel,
-    incrementCoinsPerClick,
-    incrementCurrentEnergy,
-    setMultitapCost,
-    setMultitapLevel,
-    setRechargeSpeedCost,
-    setRechargeSpeedLevel,
-    setEnergyLimitCost,
-    setEnergyLimitLevel,
-  } = useBalanceStore((state) => state);
+  const [balance] = useAtom(coinsAtom);
+  // const {
+  //   totalCoins,
+  //   maxEnergyLevel,
+  //   freeEnergyClicks,
+  //   lastFreeEnergyTime,
+  //   multitapCost,
+  //   multitapLevel,
+  //   rechargeSpeedCost,
+  //   rechargeSpeedLevel,
+  //   energyLimitCost,
+  //   energyLimitLevel,
+  //   decrementTotalCoins,
+  //   incrementFreeEnergyClicks,
+  //   setLastFreeEnergyTime,
+  //   incrementChargingSpeed,
+  //   incrementMaxEnergyLevel,
+  //   incrementCoinsPerClick,
+  //   incrementCurrentEnergy,
+  //   setMultitapCost,
+  //   setMultitapLevel,
+  //   setRechargeSpeedCost,
+  //   setRechargeSpeedLevel,
+  //   setEnergyLimitCost,
+  //   setEnergyLimitLevel,
+  // } = useBalanceStore((state) => state);
 
-  const { user, webApp } = useTelegram();
+  // const { user, webApp } = useTelegram();
 
-  const initialBoosters: IBooster[] = [
-    {
-      id: 1,
-      name: "Free Energy",
-      image: "/solar-energy.gif",
-      cost: 0,
-      level: freeEnergyClicks,
-      disabled: false,
-      onClick: async () => {
-        showLoadingMessage("Using Free Energy booster...");
-        try {
-          incrementCurrentEnergy(maxEnergyLevel);
-          incrementFreeEnergyClicks();
-          setLastFreeEnergyTime();
-          await updateCloudStorage("freeEnergyClicks", freeEnergyClicks + 1);
-          await updateCloudStorage("lastFreeEnergyTime", Date.now());
-          showSuccessMessage("Free Energy booster used successfully!");
-        } catch (error) {
-          showErrorMessage("Failed to use Free Energy booster.");
-        }
-      },
-    },
-    {
-      id: 2,
-      name: "Multitap",
-      image: "/tap-gesture.gif",
-      cost: multitapCost,
-      level: multitapLevel,
-      disabled: totalCoins < multitapCost,
-      onClick: async (cost: number) => {
-        showLoadingMessage("Upgrading Multitap booster...");
-        try {
-          decrementTotalCoins(cost);
-          incrementCoinsPerClick(1);
-          await updateCloudStorage("totalCoins", totalCoins - cost);
-          await updateCloudStorage("multitapLevel", multitapLevel + 1);
-          await updateCloudStorage(
-            "multitapCost",
-            Math.floor(multitapCost + multitapCost * 1.2)
-          );
-          showSuccessMessage("Multitap booster upgraded successfully!");
-        } catch (error) {
-          showErrorMessage("Failed to upgrade Multitap booster.");
-        }
-      },
-    },
-    {
-      id: 3,
-      name: "Recharge Speed",
-      image: "/bolt.gif",
-      cost: rechargeSpeedCost,
-      level: rechargeSpeedLevel,
-      disabled: totalCoins < rechargeSpeedCost,
-      onClick: (cost: number) => {
-        showLoadingMessage("Upgrading Recharge Speed booster...");
-        decrementTotalCoins(cost);
-        incrementChargingSpeed();
-        showSuccessMessage("Recharge Speed booster upgraded successfully!");
-      },
-    },
-    {
-      id: 4,
-      name: "Energy Limit",
-      image: "/battery.gif",
-      cost: energyLimitCost,
-      level: energyLimitLevel,
-      disabled: totalCoins < energyLimitCost,
-      onClick: (cost: number) => {
-        showLoadingMessage("Upgrading Energy Limit booster...");
-        decrementTotalCoins(cost);
-        incrementMaxEnergyLevel(500);
-        showSuccessMessage("Energy Limit booster upgraded successfully!");
-      },
-    },
-  ];
+  // const initialBoosters: IBooster[] = [
+  //   {
+  //     id: 1,
+  //     name: "Free Energy",
+  //     image: "/solar-energy.gif",
+  //     cost: 0,
+  //     level: freeEnergyClicks,
+  //     disabled: false,
+  //     onClick: async () => {
+  //       showLoadingMessage("Using Free Energy booster...");
+  //       try {
+  //         incrementCurrentEnergy(maxEnergyLevel);
+  //         incrementFreeEnergyClicks();
+  //         setLastFreeEnergyTime();
+  //         await updateCloudStorage("freeEnergyClicks", freeEnergyClicks + 1);
+  //         await updateCloudStorage("lastFreeEnergyTime", Date.now());
+  //         showSuccessMessage("Free Energy booster used successfully!");
+  //       } catch (error) {
+  //         showErrorMessage("Failed to use Free Energy booster.");
+  //       }
+  //     },
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Multitap",
+  //     image: "/tap-gesture.gif",
+  //     cost: multitapCost,
+  //     level: multitapLevel,
+  //     disabled: totalCoins < multitapCost,
+  //     onClick: async (cost: number) => {
+  //       showLoadingMessage("Upgrading Multitap booster...");
+  //       try {
+  //         decrementTotalCoins(cost);
+  //         incrementCoinsPerClick(1);
+  //         await updateCloudStorage("totalCoins", totalCoins - cost);
+  //         await updateCloudStorage("multitapLevel", multitapLevel + 1);
+  //         await updateCloudStorage(
+  //           "multitapCost",
+  //           Math.floor(multitapCost + multitapCost * 1.2)
+  //         );
+  //         showSuccessMessage("Multitap booster upgraded successfully!");
+  //       } catch (error) {
+  //         showErrorMessage("Failed to upgrade Multitap booster.");
+  //       }
+  //     },
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Recharge Speed",
+  //     image: "/bolt.gif",
+  //     cost: rechargeSpeedCost,
+  //     level: rechargeSpeedLevel,
+  //     disabled: totalCoins < rechargeSpeedCost,
+  //     onClick: (cost: number) => {
+  //       showLoadingMessage("Upgrading Recharge Speed booster...");
+  //       decrementTotalCoins(cost);
+  //       incrementChargingSpeed();
+  //       showSuccessMessage("Recharge Speed booster upgraded successfully!");
+  //     },
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "Energy Limit",
+  //     image: "/battery.gif",
+  //     cost: energyLimitCost,
+  //     level: energyLimitLevel,
+  //     disabled: totalCoins < energyLimitCost,
+  //     onClick: (cost: number) => {
+  //       showLoadingMessage("Upgrading Energy Limit booster...");
+  //       decrementTotalCoins(cost);
+  //       incrementMaxEnergyLevel(500);
+  //       showSuccessMessage("Energy Limit booster upgraded successfully!");
+  //     },
+  //   },
+  // ];
 
-  const updateCloudStorage = (key: string, value: any) => {
-    return new Promise((resolve, reject) => {
-      webApp?.CloudStorage.setItem(key, value.toString(), (err, success) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(success);
-        }
-      });
-    });
-  };
+  // const updateCloudStorage = (key: string, value: any) => {
+  //   return new Promise((resolve, reject) => {
+  //     webApp?.CloudStorage.setItem(key, value.toString(), (err, success) => {
+  //       if (err) {
+  //         reject(err);
+  //       } else {
+  //         resolve(success);
+  //       }
+  //     });
+  //   });
+  // };
 
-  const [boosters, setBoosters] = useState<IBooster[]>(initialBoosters);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedBooster, setSelectedBooster] = useState<IBooster | null>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-  const [message, setMessage] = useState<{
-    id: number;
-    text: string;
-    type: string;
-  } | null>(null);
+  // const [boosters, setBoosters] = useState<IBooster[]>(initialBoosters);
+  // const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [selectedBooster, setSelectedBooster] = useState<IBooster | null>(null);
+  // const modalRef = useRef<HTMLDivElement>(null);
+  // const [message, setMessage] = useState<{
+  //   id: number;
+  //   text: string;
+  //   type: string;
+  // } | null>(null);
 
-  const showMessage = (text: string, type: string) => {
-    const id = Date.now();
-    setMessage({ id, text, type });
-    setTimeout(() => {
-      setMessage(null);
-    }, 5000);
-  };
+  // const showMessage = (text: string, type: string) => {
+  //   const id = Date.now();
+  //   setMessage({ id, text, type });
+  //   setTimeout(() => {
+  //     setMessage(null);
+  //   }, 5000);
+  // };
 
-  const showLoadingMessage = (text: string) => showMessage(text, "loading");
-  const showSuccessMessage = (text: string) => showMessage(text, "success");
-  const showErrorMessage = (text: string) => showMessage(text, "error");
+  // const showLoadingMessage = (text: string) => showMessage(text, "loading");
+  // const showSuccessMessage = (text: string) => showMessage(text, "success");
+  // const showErrorMessage = (text: string) => showMessage(text, "error");
 
-  useEffect(() => {
-    const now = Date.now();
-    setBoosters((prevBoosters) =>
-      prevBoosters.map((booster) => {
-        if (booster.id === 1) {
-          const timeElapsed = now - lastFreeEnergyTime;
-          const twoHoursInMs = 2 * 60 * 60 * 1000;
-          return {
-            ...booster,
-            disabled: timeElapsed < twoHoursInMs,
-          };
-        } else {
-          return {
-            ...booster,
-            disabled: totalCoins < booster.cost,
-          };
-        }
-      })
-    );
-  }, [totalCoins, freeEnergyClicks, lastFreeEnergyTime]);
+  // useEffect(() => {
+  //   const now = Date.now();
+  //   setBoosters((prevBoosters) =>
+  //     prevBoosters.map((booster) => {
+  //       if (booster.id === 1) {
+  //         const timeElapsed = now - lastFreeEnergyTime;
+  //         const twoHoursInMs = 2 * 60 * 60 * 1000;
+  //         return {
+  //           ...booster,
+  //           disabled: timeElapsed < twoHoursInMs,
+  //         };
+  //       } else {
+  //         return {
+  //           ...booster,
+  //           disabled: totalCoins < booster.cost,
+  //         };
+  //       }
+  //     })
+  //   );
+  // }, [totalCoins, freeEnergyClicks, lastFreeEnergyTime]);
 
-  const handleBoosterClick = (booster: IBooster) => {
-    setSelectedBooster(booster);
-    setIsModalOpen(true);
-  };
+  // const handleBoosterClick = (booster: IBooster) => {
+  //   setSelectedBooster(booster);
+  //   setIsModalOpen(true);
+  // };
 
-  const handleCloseModal = (e: React.MouseEvent) => {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      setIsModalOpen(false);
-    }
-  };
+  // const handleCloseModal = (e: React.MouseEvent) => {
+  //   if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+  //     setIsModalOpen(false);
+  //   }
+  // };
 
-  const upgradeBooster = (id: number) => {
-    setBoosters((prevBoosters) =>
-      prevBoosters.map((booster) => {
-        if (booster.id === id && booster.level < 20) {
-          let newCost = 0;
-          let newLevel = 1;
-          if (id === 1) {
-            newCost = freeEnergyClicks + 1;
-            newLevel = booster.level + 1;
-          } else if (id === 2) {
-            newCost = Math.floor(multitapCost + multitapCost * 1.2);
-            newLevel = multitapLevel + 1;
-            setMultitapLevel(newLevel);
-            setMultitapCost(newCost);
-          } else if (id === 3) {
-            newCost = Math.floor(rechargeSpeedCost + rechargeSpeedCost * 1.2);
-            newLevel = rechargeSpeedLevel + 1;
-            setRechargeSpeedLevel(newLevel);
-            setRechargeSpeedCost(newCost);
-          } else if (id === 4) {
-            newCost = Math.floor(energyLimitCost + energyLimitCost * 1.2);
-            newLevel = energyLimitLevel + 1;
-            setEnergyLimitLevel(newLevel);
-            setEnergyLimitCost(newCost);
-          }
-          return {
-            ...booster,
-            level: newLevel,
-            cost: newCost,
-            disabled: booster.id === 1 ? true : totalCoins < newCost,
-          };
-        }
-        return booster;
-      })
-    );
-  };
+  // const upgradeBooster = (id: number) => {
+  //   setBoosters((prevBoosters) =>
+  //     prevBoosters.map((booster) => {
+  //       if (booster.id === id && booster.level < 20) {
+  //         let newCost = 0;
+  //         let newLevel = 1;
+  //         if (id === 1) {
+  //           newCost = freeEnergyClicks + 1;
+  //           newLevel = booster.level + 1;
+  //         } else if (id === 2) {
+  //           newCost = Math.floor(multitapCost + multitapCost * 1.2);
+  //           newLevel = multitapLevel + 1;
+  //           setMultitapLevel(newLevel);
+  //           setMultitapCost(newCost);
+  //         } else if (id === 3) {
+  //           newCost = Math.floor(rechargeSpeedCost + rechargeSpeedCost * 1.2);
+  //           newLevel = rechargeSpeedLevel + 1;
+  //           setRechargeSpeedLevel(newLevel);
+  //           setRechargeSpeedCost(newCost);
+  //         } else if (id === 4) {
+  //           newCost = Math.floor(energyLimitCost + energyLimitCost * 1.2);
+  //           newLevel = energyLimitLevel + 1;
+  //           setEnergyLimitLevel(newLevel);
+  //           setEnergyLimitCost(newCost);
+  //         }
+  //         return {
+  //           ...booster,
+  //           level: newLevel,
+  //           cost: newCost,
+  //           disabled: booster.id === 1 ? true : totalCoins < newCost,
+  //         };
+  //       }
+  //       return booster;
+  //     })
+  //   );
+  // };
 
-  const handleConfirmUpgrade = () => {
-    if (selectedBooster && totalCoins >= selectedBooster.cost) {
-      selectedBooster.onClick?.(selectedBooster.cost);
-      upgradeBooster(selectedBooster.id);
-      setIsModalOpen(false);
-    }
-  };
+  // const handleConfirmUpgrade = () => {
+  //   if (selectedBooster && totalCoins >= selectedBooster.cost) {
+  //     selectedBooster.onClick?.(selectedBooster.cost);
+  //     upgradeBooster(selectedBooster.id);
+  //     setIsModalOpen(false);
+  //   }
+  // };
 
-  const now = Date.now();
-  const twoHoursInSeconds = 2 * 60 * 60;
+  // const now = Date.now();
+  // const twoHoursInSeconds = 2 * 60 * 60;
 
-  const [timeRemaining, setTimeRemaining] = useState(() => {
-    const timeElapsed = Math.floor((now - lastFreeEnergyTime) / 1000); // Convert to seconds
-    return Math.max(twoHoursInSeconds - timeElapsed, 0); // Ensure it doesn't go negative
-  });
+  // const [timeRemaining, setTimeRemaining] = useState(() => {
+  //   const timeElapsed = Math.floor((now - lastFreeEnergyTime) / 1000); // Convert to seconds
+  //   return Math.max(twoHoursInSeconds - timeElapsed, 0); // Ensure it doesn't go negative
+  // });
 
-  useEffect(() => {
-    const timerInterval = setInterval(() => {
-      setTimeRemaining((prevTime) => {
-        if (prevTime <= 0) {
-          clearInterval(timerInterval);
-          // Perform actions when the timer reaches zero
-          console.log("Countdown complete!");
-          return 0;
-        } else {
-          return prevTime - 1; // Decrease by 1 second
-        }
-      });
-    }, 1000);
+  // useEffect(() => {
+  //   const timerInterval = setInterval(() => {
+  //     setTimeRemaining((prevTime) => {
+  //       if (prevTime <= 0) {
+  //         clearInterval(timerInterval);
+  //         // Perform actions when the timer reaches zero
+  //         console.log("Countdown complete!");
+  //         return 0;
+  //       } else {
+  //         return prevTime - 1; // Decrease by 1 second
+  //       }
+  //     });
+  //   }, 1000);
 
-    return () => clearInterval(timerInterval); // Cleanup interval on component unmount
-  }, []);
+  //   return () => clearInterval(timerInterval); // Cleanup interval on component unmount
+  // }, []);
 
   const formatTime = (timeInSeconds: number) => {
     const hours = Math.floor(timeInSeconds / 3600);
@@ -267,7 +270,7 @@ const BoostPage = () => {
 
   return (
     <div className='bg-gray-100 min-h-screen'>
-      <div className='flex flex-col items-center justify-center space-y-4 py-4'>
+      {/* <div className='flex flex-col items-center justify-center space-y-4 py-4'>
         <h1 className='text-2xl font-bold'>Boosters</h1>
         <div className='flex flex-col space-y-4'>
           {boosters.map((booster) => (
@@ -378,7 +381,9 @@ const BoostPage = () => {
             </div>
           )}
         </div>
-      </div>
+      </div> */}
+      <p className='text-lg font-semibold'>{balance}</p>
+      <p className='text-lg font-semibold'>{formatTime(2 * 60 * 60)}</p>
       <NavLinks />
     </div>
   );

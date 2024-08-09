@@ -14,7 +14,7 @@ function NavLinks() {
   const pathname = usePathname();
 
   return (
-    <nav className='sticky bottom-0 left-0 right-0 '>
+    <nav className='sticky bottom-0 left-0 right-0 border'>
       <ul className='flex justify-between text-xs bg-gray-700 text-white'>
         <li className={`${pathname === "/bot" ? "bg-gray-900" : ""}`}>
           <Link

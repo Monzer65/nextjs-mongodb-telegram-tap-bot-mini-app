@@ -13,21 +13,15 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
-      // animation: {
-      //   float: "float 3s linear infinite",
-      // },
-      // keyframes: {
-      //   float: {
-      //     "0%": {
-      //       opacity: "1",
-      //       transform: "translateY(0)",
-      //     },
-      //     "100%": {
-      //       opacity: "0",
-      //       transform: "translateY(-50px)",
-      //     },
-      //   },
-      // },
+      animation: {
+        "float-up": "float 1s ease-out forwards",
+      },
+      keyframes: {
+        float: {
+          "0%": { transform: "translateY(0)", opacity: "1" },
+          "100%": { transform: "translateY(-250px)", opacity: "0" },
+        },
+      },
     },
   },
   plugins: [],

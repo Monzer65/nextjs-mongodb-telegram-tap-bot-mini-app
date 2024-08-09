@@ -37,7 +37,7 @@
   user-select: none;
 }
 
-@keyframes float {
+/* @keyframes float {
   0% {
     opacity: 1;
     transform: translateY(0) translateX(0);
@@ -46,7 +46,7 @@
     opacity: 0;
     transform: translateY(-50px) translateX(-10px);
   }
-}
+} */
 
 .filter-green {
   filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg)
