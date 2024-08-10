@@ -10,18 +10,21 @@ const cleanPercentage = (percentage: number) => {
 const Circle = ({ colour, pct }: { colour: string; pct: number }) => {
   const r = 70;
   const circ = 2 * Math.PI * r;
-  const strokePct = ((100 - pct) * circ) / 100;
+
+  // Ensure that strokePct is circ when pct is 0
+  const strokePct = pct === 0 ? circ : ((100 - pct) * circ) / 100;
+  // console.log("strok:", strokePct);
   return (
     <circle
       r={r}
       cx={100}
       cy={100}
       fill='transparent'
-      stroke={strokePct !== circ ? colour : ""} // remove colour as 0% sets full circumference
+      stroke={pct > 0 ? colour : "none"}
       strokeWidth={"2rem"}
       strokeDasharray={circ}
-      strokeDashoffset={pct ? strokePct : 0}
-      strokeLinecap='round'
+      strokeDashoffset={strokePct}
+      // strokeLinecap='round'
       className='transform transition-all ease-in-out duration-700'
     ></circle>
   );

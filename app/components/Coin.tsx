@@ -10,26 +10,19 @@ import { CurrencyYenIcon } from "@heroicons/react/24/outline";
 import Pie from "./Pie";
 
 export const coinsAtom = atom(0);
-const CURRENT_ENERGY = 100;
-const MAX_ENERGY = 10032;
-const INCREMENT_BY = 7;
+export const maxEnergyAtom = atom(1000);
+export const currentEnergyAtom = atom(90);
+export const incrementByAtom = atom(1);
+export const incrementSpeedAtom = atom(10);
 const DEBOUNCE_DELAY = 3000;
-const Levels = [
-  { name: "Novice Navigator", minPoint: 0 },
-  { name: "Apprentice Achiever", minPoint: 3162 },
-  { name: "Skill Seeker", minPoint: 10000 },
-  { name: "Craftsmen Champion", minPoint: 31623 },
-  { name: "Expert Explorer", minPoint: 1000000 },
-  { name: "Master of Mastery", minPoint: 316227 },
-  { name: "Grandmaster", minPoint: 1000000 },
-  { name: "Legendary Pro", minPoint: 3162277 },
-  { name: "Epic Tycoon", minPoint: 10000000 },
-  { name: "Infinity Mogul", minPoint: 100000000 },
-];
 
 const Coin = () => {
   const { user } = useTelegram();
   const [totalCount, setTotalCount] = useAtom(coinsAtom);
+  const [maxEnergy, setMaxEnergy] = useAtom(maxEnergyAtom);
+  const [currentEnergy, setCurrentEnergy] = useAtom(currentEnergyAtom);
+  const [incrementBy] = useAtom(incrementByAtom);
+  const [incrementSpeed] = useAtom(incrementSpeedAtom);
   const [batchedIncrements, setBatchedIncrements] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -58,10 +51,11 @@ const Coin = () => {
       const data = await response.json();
       if (response.ok) {
         setTotalCount(data.coins);
-        setProgress({
-          percentage: data.progress ? data.progress : 100,
-          colour: data.colour ? data.colour : "hsl(120, 60%, 45%)",
-        });
+        // setProgress({
+        //   percentage: data.progress ?? 100,
+        //   colour: data.colour ?? "hsl(120, 60%, 45%)",
+        // });
+        // setMaxEnergy(data.maxEnergy ?? maxEnergy);
       } else {
         console.error("Failed to fetch initial coins", data.error);
       }
@@ -77,9 +71,9 @@ const Coin = () => {
   }, [fetchInitialCoins]);
 
   const incrementTotalCount = useCallback(() => {
-    setTotalCount((prev) => prev + INCREMENT_BY);
-    setBatchedIncrements((prev) => prev + INCREMENT_BY);
-  }, [setTotalCount]);
+    setTotalCount((prev) => prev + incrementBy);
+    setBatchedIncrements((prev) => prev + incrementBy);
+  }, [incrementBy, setTotalCount]);
 
   useEffect(() => {
     if (batchedIncrements > 0) {
@@ -119,7 +113,6 @@ const Coin = () => {
   >([]);
 
   const handleCoinClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const maxProgress = 367;
     const { currentTarget: coinBtn, clientX, clientY, pageX, pageY } = e;
     const { left, top, width, height } = coinBtn.getBoundingClientRect();
     const clickX = clientX - left - width / 2;
@@ -130,23 +123,54 @@ const Coin = () => {
     }deg) rotateY(${clickX / 10}deg)`;
     setTimeout(() => (coinBtn.style.transform = ""), 100);
 
+    if (currentEnergy - incrementBy < 0) {
+      return;
+    }
+
     setTaps([...taps, { id: Date.now(), x: pageX, y: pageY }]);
     incrementTotalCount();
+    setCurrentEnergy((prev) => prev - incrementBy);
     generateProgressValues();
   };
 
   const generateProgressValues = () => {
-    setProgress((prevProgress) => {
-      const newPercentage = Math.max(0, prevProgress.percentage - INCREMENT_BY);
+    if (currentEnergy < 0) return;
+    setProgress(() => {
+      const newPercentage = (currentEnergy * 100) / maxEnergy;
+
       return {
         percentage: newPercentage,
-        colour: `hsl(51, 100%, 50%)`,
-        // ${Math.random() * 360}, ${Math.random() * 50 + 50}%, ${
-        //   Math.random() * 30 + 20
-        // }
+        colour: `hsl(${newPercentage}, 100%, 50%)`,
       };
     });
   };
+
+  // console.log("cur", currentEnergy);
+  // console.log("max", maxEnergy);
+  // console.log("increBy", incrementBy);
+  // console.log("newperc", (currentEnergy * 100) / maxEnergy);
+
+  useEffect(() => {
+    if (currentEnergy >= maxEnergy) return;
+
+    const interval = setInterval(() => {
+      setCurrentEnergy((prevEnergy) => {
+        const newEnergy = prevEnergy + incrementSpeed;
+
+        setProgress(() => {
+          const newPercentage = (newEnergy * 100) / maxEnergy;
+          return {
+            percentage: newPercentage,
+            colour: `hsl(${newPercentage}, 100%, 50%)`,
+          };
+        });
+
+        return newEnergy;
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [currentEnergy, maxEnergy, incrementSpeed, setCurrentEnergy]);
 
   if (isLoading) {
     return (
@@ -186,7 +210,7 @@ const Coin = () => {
             setTaps((prev) => prev.filter((p) => p.id !== tap.id))
           }
         >
-          {INCREMENT_BY}
+          {incrementBy}
         </div>
       ))}
     </div>
