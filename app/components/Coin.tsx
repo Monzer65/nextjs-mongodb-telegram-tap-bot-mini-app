@@ -8,6 +8,7 @@ import { incrementCoins } from "../lib/actions";
 import { useTelegram } from "../contexts/TelegramProvider";
 import { CurrencyYenIcon } from "@heroicons/react/24/outline";
 import Pie from "./Pie";
+import LoadingSpinner from "./LoadingSpinner";
 
 export const coinsAtom = atom(0);
 export const maxEnergyAtom = atom(1000);
@@ -197,42 +198,48 @@ const Coin = () => {
   }
 
   return (
-    <div className='bg-gray-800 min-h-[calc(100vh_-_4.25rem)] flex flex-col items-center justify-center'>
-      <Header username={user?.first_name || "no name"} />
-      <p className='flex text-yellow-400 text-4xl'>
-        <CurrencyYenIcon className='w-8' />
-        {totalCount}
-      </p>
-      <button onClick={handleCoinClick} className='rounded-full m-auto'>
-        <span className='sr-only'>Add Coins</span>
-        <span>
-          {currentEnergy}/{maxEnergy}
-        </span>
-        <Pie percentage={progress.percentage} colour={progress.colour} />
-      </button>
-      {isSaving && (
-        <div className='flex gap-1 text-xs bg-gray-100 p-1 rounded-md fixed top-2 left-2'>
-          <Spinner size={5} />
-          Saving ...
+    <>
+      {!user ? (
+        <LoadingSpinner />
+      ) : (
+        <div className='bg-gray-800 min-h-[calc(100vh_-_4.25rem)] flex flex-col items-center justify-center'>
+          <Header username={user?.first_name || "no name"} />
+          <p className='flex text-yellow-400 text-4xl'>
+            <CurrencyYenIcon className='w-8' />
+            {totalCount}
+          </p>
+          <button onClick={handleCoinClick} className='rounded-full m-auto'>
+            <span className='sr-only'>Add Coins</span>
+            <span>
+              {currentEnergy}/{maxEnergy}
+            </span>
+            <Pie percentage={progress.percentage} colour={progress.colour} />
+          </button>
+          {isSaving && (
+            <div className='flex gap-1 text-xs bg-gray-100 p-1 rounded-md fixed top-2 left-2'>
+              <Spinner size={5} />
+              Saving ...
+            </div>
+          )}
+
+          {taps.map((tap) => (
+            <div
+              key={tap.id}
+              className='absolute text-5xl font-bold text-yellow-500 pointer-events-none z-10 animate-float-up'
+              style={{
+                top: `${tap.y - 42}px`,
+                left: `${tap.x - 28}px`,
+              }}
+              onAnimationEnd={() =>
+                setTaps((prev) => prev.filter((p) => p.id !== tap.id))
+              }
+            >
+              {incrementBy}
+            </div>
+          ))}
         </div>
       )}
-
-      {taps.map((tap) => (
-        <div
-          key={tap.id}
-          className='absolute text-5xl font-bold text-yellow-500 pointer-events-none z-10 animate-float-up'
-          style={{
-            top: `${tap.y - 42}px`,
-            left: `${tap.x - 28}px`,
-          }}
-          onAnimationEnd={() =>
-            setTaps((prev) => prev.filter((p) => p.id !== tap.id))
-          }
-        >
-          {incrementBy}
-        </div>
-      ))}
-    </div>
+    </>
   );
 };
 
