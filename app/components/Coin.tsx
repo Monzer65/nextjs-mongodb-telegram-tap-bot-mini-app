@@ -11,7 +11,7 @@ import Pie from "./Pie";
 
 export const coinsAtom = atom(0);
 export const maxEnergyAtom = atom(1000);
-export const currentEnergyAtom = atom(90);
+export const currentEnergyAtom = atom(900);
 export const incrementByAtom = atom(1);
 export const incrementSpeedAtom = atom(10);
 const DEBOUNCE_DELAY = 3000;

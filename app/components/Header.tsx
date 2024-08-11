@@ -1,7 +1,7 @@
 "use client";
 
-import { atom, useAtom } from "jotai";
-import { useEffect } from "react";
+import { useAtom } from "jotai";
+import { useEffect, useState } from "react";
 import { coinsAtom } from "./Coin";
 
 const LEVELS = [
@@ -17,10 +17,8 @@ const LEVELS = [
   { name: "Infinity Mogul", minPoint: 100000000 },
 ];
 
-export const currentLevelAtom = atom(LEVELS[0]);
-
 const Header = ({ username }: { username: string }) => {
-  const [currentLevel, setCurrentLevel] = useAtom(currentLevelAtom);
+  const [currentLevel, setCurrentLevel] = useState(LEVELS[0]);
   const [totalCoins] = useAtom(coinsAtom);
   const calculateCurrentLevel = (coins: number) => {
     return LEVELS.reduce((acc, level, index) => {
@@ -69,7 +67,7 @@ const Header = ({ username }: { username: string }) => {
 
       <div className='w-full bg-gray-800 h-4 rounded-full overflow-hidden'>
         <div
-          className='bg-gradient-to-r from-green-400 to-green-600 h-4'
+          className='bg-gradient-to-r from-green-400 to-green-700 h-4'
           style={{ width: `${progress}%` }}
           aria-label='Level progress'
           aria-valuenow={progress}

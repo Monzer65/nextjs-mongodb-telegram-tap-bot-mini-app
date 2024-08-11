@@ -1,389 +1,223 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import NavLinks from "@/app/components/NavigationBar";
-import { useBalanceStore } from "@/providers/balance-store-provider";
 import {
-  ChevronRightIcon,
-  CurrencyDollarIcon,
-  LockClosedIcon,
-  LockOpenIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+  coinsAtom,
+  currentEnergyAtom,
+  incrementByAtom,
+  incrementSpeedAtom,
+  maxEnergyAtom,
+} from "@/app/components/Coin";
+import NavLinks from "@/app/components/NavigationBar";
+import TimeCounter from "@/app/components/TimeCounter";
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
+import { atom, useAtom } from "jotai";
 import Image from "next/image";
-import { IBooster } from "@/app/types/types";
-import { useTelegram } from "@/app/contexts/TelegramProvider";
-import { BalanceActions, BalanceState } from "@/stores/balance";
-import { useAtom } from "jotai";
-import { coinsAtom } from "@/app/components/Coin";
+import { useState, useCallback, useMemo } from "react";
+
+export const boostersAtom = atom([
+  {
+    name: "Free Energy",
+    image: "/solar-energy.gif",
+    maxLevels: 6,
+    currentLevel: 1,
+    cost: 0,
+    disabled: false,
+  },
+  {
+    name: "Coins per Tap",
+    image: "/tap-gesture.gif",
+    maxLevels: 20,
+    currentLevel: 1,
+    cost: 500,
+    disabled: false,
+  },
+  {
+    name: "Max Energy Limit",
+    image: "/battery.gif",
+    maxLevels: 20,
+    currentLevel: 1,
+    cost: 500,
+    disabled: false,
+  },
+  {
+    name: "Recharge Speed",
+    image: "/bolt.gif",
+    maxLevels: 15,
+    currentLevel: 1,
+    cost: 3000,
+    disabled: false,
+  },
+]);
+
+// Derived atoms for easier state management
+export const currentBoosterLevelsAtom = atom((get) =>
+  get(boostersAtom).map((booster) => booster.currentLevel)
+);
+export const currentBoosterCostsAtom = atom((get) =>
+  get(boostersAtom).map((booster) => booster.cost)
+);
 
 const BoostPage = () => {
-  const [balance] = useAtom(coinsAtom);
-  // const {
-  //   totalCoins,
-  //   maxEnergyLevel,
-  //   freeEnergyClicks,
-  //   lastFreeEnergyTime,
-  //   multitapCost,
-  //   multitapLevel,
-  //   rechargeSpeedCost,
-  //   rechargeSpeedLevel,
-  //   energyLimitCost,
-  //   energyLimitLevel,
-  //   decrementTotalCoins,
-  //   incrementFreeEnergyClicks,
-  //   setLastFreeEnergyTime,
-  //   incrementChargingSpeed,
-  //   incrementMaxEnergyLevel,
-  //   incrementCoinsPerClick,
-  //   incrementCurrentEnergy,
-  //   setMultitapCost,
-  //   setMultitapLevel,
-  //   setRechargeSpeedCost,
-  //   setRechargeSpeedLevel,
-  //   setEnergyLimitCost,
-  //   setEnergyLimitLevel,
-  // } = useBalanceStore((state) => state);
+  const [totalCount, setTotalCount] = useAtom(coinsAtom);
+  const [incrementBy, setIncrementBy] = useAtom(incrementByAtom);
+  const [incrementSpeed, setIncrementSpeed] = useAtom(incrementSpeedAtom);
+  const [maxEnergy, setMaxEnergy] = useAtom(maxEnergyAtom);
+  const [currentEnergy, setCurrentEnergy] = useAtom(currentEnergyAtom);
+  const [boosters, setBoosters] = useAtom(boostersAtom);
+  const [lastFreeEnergyTime, setLastFreeEnergyTime] = useState<number>(0);
+  const [freeEnergyUses, setFreeEnergyUses] = useState<number>(0);
 
-  // const { user, webApp } = useTelegram();
+  // Memoized calculations for level and cost
+  const boosterLevels = useMemo(
+    () => boosters.map((booster) => booster.currentLevel),
+    [boosters]
+  );
 
-  // const initialBoosters: IBooster[] = [
-  //   {
-  //     id: 1,
-  //     name: "Free Energy",
-  //     image: "/solar-energy.gif",
-  //     cost: 0,
-  //     level: freeEnergyClicks,
-  //     disabled: false,
-  //     onClick: async () => {
-  //       showLoadingMessage("Using Free Energy booster...");
-  //       try {
-  //         incrementCurrentEnergy(maxEnergyLevel);
-  //         incrementFreeEnergyClicks();
-  //         setLastFreeEnergyTime();
-  //         await updateCloudStorage("freeEnergyClicks", freeEnergyClicks + 1);
-  //         await updateCloudStorage("lastFreeEnergyTime", Date.now());
-  //         showSuccessMessage("Free Energy booster used successfully!");
-  //       } catch (error) {
-  //         showErrorMessage("Failed to use Free Energy booster.");
-  //       }
-  //     },
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Multitap",
-  //     image: "/tap-gesture.gif",
-  //     cost: multitapCost,
-  //     level: multitapLevel,
-  //     disabled: totalCoins < multitapCost,
-  //     onClick: async (cost: number) => {
-  //       showLoadingMessage("Upgrading Multitap booster...");
-  //       try {
-  //         decrementTotalCoins(cost);
-  //         incrementCoinsPerClick(1);
-  //         await updateCloudStorage("totalCoins", totalCoins - cost);
-  //         await updateCloudStorage("multitapLevel", multitapLevel + 1);
-  //         await updateCloudStorage(
-  //           "multitapCost",
-  //           Math.floor(multitapCost + multitapCost * 1.2)
-  //         );
-  //         showSuccessMessage("Multitap booster upgraded successfully!");
-  //       } catch (error) {
-  //         showErrorMessage("Failed to upgrade Multitap booster.");
-  //       }
-  //     },
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Recharge Speed",
-  //     image: "/bolt.gif",
-  //     cost: rechargeSpeedCost,
-  //     level: rechargeSpeedLevel,
-  //     disabled: totalCoins < rechargeSpeedCost,
-  //     onClick: (cost: number) => {
-  //       showLoadingMessage("Upgrading Recharge Speed booster...");
-  //       decrementTotalCoins(cost);
-  //       incrementChargingSpeed();
-  //       showSuccessMessage("Recharge Speed booster upgraded successfully!");
-  //     },
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Energy Limit",
-  //     image: "/battery.gif",
-  //     cost: energyLimitCost,
-  //     level: energyLimitLevel,
-  //     disabled: totalCoins < energyLimitCost,
-  //     onClick: (cost: number) => {
-  //       showLoadingMessage("Upgrading Energy Limit booster...");
-  //       decrementTotalCoins(cost);
-  //       incrementMaxEnergyLevel(500);
-  //       showSuccessMessage("Energy Limit booster upgraded successfully!");
-  //     },
-  //   },
-  // ];
+  const boosterCosts = useMemo(
+    () => boosters.map((booster) => booster.cost),
+    [boosters]
+  );
 
-  // const updateCloudStorage = (key: string, value: any) => {
-  //   return new Promise((resolve, reject) => {
-  //     webApp?.CloudStorage.setItem(key, value.toString(), (err, success) => {
-  //       if (err) {
-  //         reject(err);
-  //       } else {
-  //         resolve(success);
-  //       }
-  //     });
-  //   });
-  // };
+  const isBoosterDisabled = useCallback(
+    (booster: any, totalCount: number) => {
+      if (booster.name === "Free Energy") {
+        const now = Date.now();
+        const timeSinceLastUse = now - lastFreeEnergyTime;
+        const hoursSinceLastUse = timeSinceLastUse / (1000 * 60 * 60);
+        return freeEnergyUses >= booster.maxLevels || hoursSinceLastUse < 2;
+      }
+      return (
+        booster.cost > totalCount || booster.currentLevel >= booster.maxLevels
+      );
+    },
+    [lastFreeEnergyTime, freeEnergyUses]
+  );
 
-  // const [boosters, setBoosters] = useState<IBooster[]>(initialBoosters);
-  // const [isModalOpen, setIsModalOpen] = useState(false);
-  // const [selectedBooster, setSelectedBooster] = useState<IBooster | null>(null);
-  // const modalRef = useRef<HTMLDivElement>(null);
-  // const [message, setMessage] = useState<{
-  //   id: number;
-  //   text: string;
-  //   type: string;
-  // } | null>(null);
+  const handleBoosterClick = useCallback(
+    (index: number) => {
+      const booster = boosters[index];
+      const cost = boosterCosts[index];
 
-  // const showMessage = (text: string, type: string) => {
-  //   const id = Date.now();
-  //   setMessage({ id, text, type });
-  //   setTimeout(() => {
-  //     setMessage(null);
-  //   }, 5000);
-  // };
+      if (isBoosterDisabled(booster, totalCount)) {
+        return;
+      }
 
-  // const showLoadingMessage = (text: string) => showMessage(text, "loading");
-  // const showSuccessMessage = (text: string) => showMessage(text, "success");
-  // const showErrorMessage = (text: string) => showMessage(text, "error");
+      if (booster.name !== "Free Energy") {
+        setTotalCount((prevCount) => prevCount - cost);
+      }
 
-  // useEffect(() => {
-  //   const now = Date.now();
-  //   setBoosters((prevBoosters) =>
-  //     prevBoosters.map((booster) => {
-  //       if (booster.id === 1) {
-  //         const timeElapsed = now - lastFreeEnergyTime;
-  //         const twoHoursInMs = 2 * 60 * 60 * 1000;
-  //         return {
-  //           ...booster,
-  //           disabled: timeElapsed < twoHoursInMs,
-  //         };
-  //       } else {
-  //         return {
-  //           ...booster,
-  //           disabled: totalCoins < booster.cost,
-  //         };
-  //       }
-  //     })
-  //   );
-  // }, [totalCoins, freeEnergyClicks, lastFreeEnergyTime]);
+      const updatedBoosters = [...boosters];
+      updatedBoosters[index] = {
+        ...booster,
+        currentLevel: booster.currentLevel + 1,
+        cost: booster.name === "Free Energy" ? 0 : booster.cost * 2,
+      };
 
-  // const handleBoosterClick = (booster: IBooster) => {
-  //   setSelectedBooster(booster);
-  //   setIsModalOpen(true);
-  // };
+      if (booster.name === "Free Energy") {
+        updatedBoosters[index].disabled = true;
+        setLastFreeEnergyTime(Date.now());
+        setFreeEnergyUses((uses) => uses + 1);
+      }
 
-  // const handleCloseModal = (e: React.MouseEvent) => {
-  //   if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-  //     setIsModalOpen(false);
-  //   }
-  // };
+      setBoosters(updatedBoosters);
 
-  // const upgradeBooster = (id: number) => {
-  //   setBoosters((prevBoosters) =>
-  //     prevBoosters.map((booster) => {
-  //       if (booster.id === id && booster.level < 20) {
-  //         let newCost = 0;
-  //         let newLevel = 1;
-  //         if (id === 1) {
-  //           newCost = freeEnergyClicks + 1;
-  //           newLevel = booster.level + 1;
-  //         } else if (id === 2) {
-  //           newCost = Math.floor(multitapCost + multitapCost * 1.2);
-  //           newLevel = multitapLevel + 1;
-  //           setMultitapLevel(newLevel);
-  //           setMultitapCost(newCost);
-  //         } else if (id === 3) {
-  //           newCost = Math.floor(rechargeSpeedCost + rechargeSpeedCost * 1.2);
-  //           newLevel = rechargeSpeedLevel + 1;
-  //           setRechargeSpeedLevel(newLevel);
-  //           setRechargeSpeedCost(newCost);
-  //         } else if (id === 4) {
-  //           newCost = Math.floor(energyLimitCost + energyLimitCost * 1.2);
-  //           newLevel = energyLimitLevel + 1;
-  //           setEnergyLimitLevel(newLevel);
-  //           setEnergyLimitCost(newCost);
-  //         }
-  //         return {
-  //           ...booster,
-  //           level: newLevel,
-  //           cost: newCost,
-  //           disabled: booster.id === 1 ? true : totalCoins < newCost,
-  //         };
-  //       }
-  //       return booster;
-  //     })
-  //   );
-  // };
-
-  // const handleConfirmUpgrade = () => {
-  //   if (selectedBooster && totalCoins >= selectedBooster.cost) {
-  //     selectedBooster.onClick?.(selectedBooster.cost);
-  //     upgradeBooster(selectedBooster.id);
-  //     setIsModalOpen(false);
-  //   }
-  // };
-
-  // const now = Date.now();
-  // const twoHoursInSeconds = 2 * 60 * 60;
-
-  // const [timeRemaining, setTimeRemaining] = useState(() => {
-  //   const timeElapsed = Math.floor((now - lastFreeEnergyTime) / 1000); // Convert to seconds
-  //   return Math.max(twoHoursInSeconds - timeElapsed, 0); // Ensure it doesn't go negative
-  // });
-
-  // useEffect(() => {
-  //   const timerInterval = setInterval(() => {
-  //     setTimeRemaining((prevTime) => {
-  //       if (prevTime <= 0) {
-  //         clearInterval(timerInterval);
-  //         // Perform actions when the timer reaches zero
-  //         console.log("Countdown complete!");
-  //         return 0;
-  //       } else {
-  //         return prevTime - 1; // Decrease by 1 second
-  //       }
-  //     });
-  //   }, 1000);
-
-  //   return () => clearInterval(timerInterval); // Cleanup interval on component unmount
-  // }, []);
-
-  const formatTime = (timeInSeconds: number) => {
-    const hours = Math.floor(timeInSeconds / 3600);
-    const minutes = Math.floor((timeInSeconds % 3600) / 60);
-    const seconds = timeInSeconds % 60;
-    return `${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-  };
+      switch (booster.name) {
+        case "Free Energy":
+          setCurrentEnergy(maxEnergy);
+          break;
+        case "Coins per Tap":
+          setIncrementBy((current) => current + 1);
+          break;
+        case "Max Energy Limit":
+          setMaxEnergy((current) => current + 500);
+          break;
+        case "Recharge Speed":
+          setIncrementSpeed((current) => current + 2);
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      boosters,
+      totalCount,
+      setTotalCount,
+      setBoosters,
+      setCurrentEnergy,
+      maxEnergy,
+      setIncrementBy,
+      setMaxEnergy,
+      setIncrementSpeed,
+      boosterCosts,
+      isBoosterDisabled,
+    ]
+  );
 
   return (
-    <div className='bg-gray-100 min-h-screen'>
-      {/* <div className='flex flex-col items-center justify-center space-y-4 py-4'>
-        <h1 className='text-2xl font-bold'>Boosters</h1>
-        <div className='flex flex-col space-y-4'>
-          {boosters.map((booster) => (
-            <div
-              key={booster.id}
-              className={`relative p-4 border rounded-lg shadow-md cursor-pointer bg-white ${
-                booster.disabled ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={() => !booster.disabled && handleBoosterClick(booster)}
-            >
+    <div className='container mx-auto px-4 py-8 max-w-md'>
+      <h1 className='text-3xl font-bold text-center mb-4'>Boosters</h1>
+      <div className='flex justify-between items-center mb-4'>
+        <h2 className='text-xl font-medium'>Your Balance:</h2>
+        <strong className='text-xl font-bold'>{totalCount}</strong>
+      </div>
+      <div>
+        <p>Current energy: {currentEnergy}</p>
+        <p>Max energy: {maxEnergy}</p>
+        <p>Coins per tap: {incrementBy}</p>
+        <p>Recharge speed: {incrementSpeed}</p>
+      </div>
+      <div className='grid grid-cols-1 gap-4'>
+        {boosters.map((booster, index) => (
+          <div
+            key={index}
+            className={`flex justify-between bg-white rounded-lg shadow-md overflow-hidden p-4 cursor-pointer ${
+              isBoosterDisabled(booster, totalCount)
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+            onClick={() => handleBoosterClick(index)}
+            aria-disabled={isBoosterDisabled(booster, totalCount)}
+          >
+            <div className='flex gap-1 items-center justify-center'>
               <Image
                 src={booster.image}
                 alt={booster.name}
-                width={64}
-                height={64}
-                className='mx-auto mb-2'
+                width={50}
+                height={50}
+                className='mx-auto mb-4'
               />
-              <h2 className='text-center text-lg font-semibold'>
-                {booster.name}
-              </h2>
-              <p className='text-center text-sm'>Cost: {booster.cost}</p>
-              <p className='text-center text-sm'>Level: {booster.level}</p>
-              {booster.id === 1 && booster.disabled && (
-                <div className='absolute inset-0 flex items-center justify-center bg-white bg-opacity-75'>
-                  <div className='text-center'>
-                    <p className='text-sm'>Next free energy in:</p>
-                    <p className='text-lg font-semibold'>
-                      {formatTime(timeRemaining)}
-                    </p>
-                  </div>
+              <h3 className='text-xl font-bold mb-2'>{booster.name}</h3>
+
+              {booster.name === "Free Energy" ? (
+                <div className='text-center'>
+                  <p className='text-sm'>Next free energy in:</p>
+                  <TimeCounter lastFreeEnergyTime={lastFreeEnergyTime} />
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-        {isModalOpen && (
-          <div
-            className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'
-            onClick={handleCloseModal}
-          >
-            <div
-              ref={modalRef}
-              className='bg-white p-6 rounded-lg shadow-lg max-w-md w-full'
-            >
-              <h2 className='text-xl font-bold mb-4'>Upgrade Booster</h2>
-              {selectedBooster && (
+              ) : (
                 <div>
-                  <p className='mb-2'>
-                    Are you sure you want to upgrade the{" "}
-                    <strong>{selectedBooster.name}</strong> booster to level{" "}
-                    <strong>{selectedBooster.level + 1}</strong> for{" "}
-                    <strong>{selectedBooster.cost}</strong> coins?
+                  <p className='text-sm mb-2'>
+                    Level: {boosterLevels[index]}/{booster.maxLevels}
                   </p>
-                  <div className='flex justify-end space-x-4'>
-                    <button
-                      className='px-4 py-2 bg-gray-300 text-gray-700 rounded-md'
-                      onClick={() => setIsModalOpen(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className='px-4 py-2 bg-blue-500 text-white rounded-md'
-                      onClick={handleConfirmUpgrade}
-                    >
-                      Confirm
-                    </button>
-                  </div>
+                  <p className='text-sm mb-2'>
+                    Cost: {boosterCosts[index]} coins
+                  </p>
                 </div>
               )}
             </div>
-          </div>
-        )}
-        <div className='fixed top-2 left-0 p-4'>
-          {message && (
-            <div
-              key={message.id}
-              className={`p-2 text-white rounded text-xs ${
-                message.type === "loading"
-                  ? "bg-blue-500 flex items-center"
-                  : message.type === "success"
-                  ? "bg-green-500"
-                  : "bg-red-500"
+            <button
+              className={`bg-blue-500 hover:bg-blue-700 text-white ${
+                isBoosterDisabled(booster, totalCount)
+                  ? "disabled:opacity-50 disabled:cursor-not-allowed"
+                  : ""
               }`}
+              aria-label={`Upgrade ${booster.name}`}
             >
-              {message.type === "loading" && (
-                <svg
-                  className='w-5 h-5 mr-3 text-white animate-spin'
-                  xmlns='http://www.w3.org/2000/svg'
-                  fill='none'
-                  viewBox='0 0 24 24'
-                >
-                  <circle
-                    className='opacity-25'
-                    cx='12'
-                    cy='12'
-                    r='10'
-                    stroke='currentColor'
-                    strokeWidth='4'
-                  ></circle>
-                  <path
-                    className='opacity-75'
-                    fill='currentColor'
-                    d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.963 7.963 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
-                  ></path>
-                </svg>
-              )}
-              {message.text}
-            </div>
-          )}
-        </div>
-      </div> */}
-      <p className='text-lg font-semibold'>{balance}</p>
-      <p className='text-lg font-semibold'>{formatTime(2 * 60 * 60)}</p>
+              <ChevronRightIcon className='w-6' />
+            </button>
+          </div>
+        ))}
+      </div>
+
       <NavLinks />
     </div>
   );
