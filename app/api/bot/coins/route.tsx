@@ -17,9 +17,21 @@ export async function POST(request: NextRequest) {
 
     const user = await col.findOne({ userId });
 
-    return new Response(JSON.stringify({ coins: user?.coins }), {
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({
+        coins: user?.coins,
+        maxEnergy: user?.maxEnergy,
+        maxEnergyLevel: user?.maxEnergyLevel,
+        maxEnergyCost: user?.maxEnergyCost,
+        incrementBy: user?.incrementBy,
+        incrementByCost: user?.incrementByCost,
+        incrementSpeed: user?.incrementSpeed,
+        incrementSpeedCost: user?.incrementSpeedCost,
+      }),
+      {
+        status: 200,
+      }
+    );
   } catch (error: any) {
     console.error(error);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {

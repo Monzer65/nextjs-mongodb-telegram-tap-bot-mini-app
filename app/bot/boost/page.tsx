@@ -4,15 +4,26 @@ import {
   coinsAtom,
   currentEnergyAtom,
   incrementByAtom,
+  incrementByCostAtom,
   incrementSpeedAtom,
+  incrementSpeedCostAtom,
   maxEnergyAtom,
+  maxEnergyCostAtom,
+  maxEnergyLevelAtom,
 } from "@/app/components/Coin";
-import NavLinks from "@/app/components/NavigationBar";
+import Spinner from "@/app/components/Spinner";
 import TimeCounter from "@/app/components/TimeCounter";
+import { useTelegram } from "@/app/contexts/TelegramProvider";
+import {
+  incrementCoins,
+  incrementCoinsPerTap,
+  incrementMaxEnergyLimit,
+  incrementRechargeSpeed,
+} from "@/app/lib/actions";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { atom, useAtom } from "jotai";
 import Image from "next/image";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 
 export const boostersAtom = atom([
   {
@@ -22,6 +33,7 @@ export const boostersAtom = atom([
     currentLevel: 1,
     cost: 0,
     disabled: false,
+    isSaving: false,
   },
   {
     name: "Coins per Tap",
@@ -30,6 +42,7 @@ export const boostersAtom = atom([
     currentLevel: 1,
     cost: 500,
     disabled: false,
+    isSaving: false,
   },
   {
     name: "Max Energy Limit",
@@ -38,6 +51,7 @@ export const boostersAtom = atom([
     currentLevel: 1,
     cost: 500,
     disabled: false,
+    isSaving: false,
   },
   {
     name: "Recharge Speed",
@@ -46,6 +60,7 @@ export const boostersAtom = atom([
     currentLevel: 1,
     cost: 3000,
     disabled: false,
+    isSaving: false,
   },
 ]);
 
@@ -59,13 +74,20 @@ export const currentBoosterCostsAtom = atom((get) =>
 
 const BoostPage = () => {
   const [totalCount, setTotalCount] = useAtom(coinsAtom);
-  const [incrementBy, setIncrementBy] = useAtom(incrementByAtom);
-  const [incrementSpeed, setIncrementSpeed] = useAtom(incrementSpeedAtom);
   const [maxEnergy, setMaxEnergy] = useAtom(maxEnergyAtom);
+  const [maxEnergyLevel, setMaxEnergyLevel] = useAtom(maxEnergyLevelAtom);
+  const [maxEnergyCost, setMaxEnergyCost] = useAtom(maxEnergyCostAtom);
   const [currentEnergy, setCurrentEnergy] = useAtom(currentEnergyAtom);
+  const [incrementBy, setIncrementBy] = useAtom(incrementByAtom);
+  const [incrementByCost, setIncrementByCost] = useAtom(incrementByCostAtom);
+  const [incrementSpeed, setIncrementSpeed] = useAtom(incrementSpeedAtom);
+  const [incrementSpeedCost, setIncrementSpeedCost] = useAtom(
+    incrementSpeedCostAtom
+  );
   const [boosters, setBoosters] = useAtom(boostersAtom);
   const [lastFreeEnergyTime, setLastFreeEnergyTime] = useState<number>(0);
   const [freeEnergyUses, setFreeEnergyUses] = useState<number>(0);
+  const { user } = useTelegram();
 
   // Memoized calculations for level and cost
   const boosterLevels = useMemo(
@@ -94,7 +116,7 @@ const BoostPage = () => {
   );
 
   const handleBoosterClick = useCallback(
-    (index: number) => {
+    async (index: number) => {
       const booster = boosters[index];
       const cost = boosterCosts[index];
 
@@ -102,56 +124,138 @@ const BoostPage = () => {
         return;
       }
 
-      if (booster.name !== "Free Energy") {
-        setTotalCount((prevCount) => prevCount - cost);
-      }
-
       const updatedBoosters = [...boosters];
       updatedBoosters[index] = {
         ...booster,
         currentLevel: booster.currentLevel + 1,
         cost: booster.name === "Free Energy" ? 0 : booster.cost * 2,
+        isSaving: true, // Set isSaving to true before the async operation
       };
-
-      if (booster.name === "Free Energy") {
-        updatedBoosters[index].disabled = true;
-        setLastFreeEnergyTime(Date.now());
-        setFreeEnergyUses((uses) => uses + 1);
-      }
 
       setBoosters(updatedBoosters);
 
-      switch (booster.name) {
-        case "Free Energy":
-          setCurrentEnergy(maxEnergy);
-          break;
-        case "Coins per Tap":
-          setIncrementBy((current) => current + 1);
-          break;
-        case "Max Energy Limit":
-          setMaxEnergy((current) => current + 500);
-          break;
-        case "Recharge Speed":
-          setIncrementSpeed((current) => current + 2);
-          break;
-        default:
-          break;
+      try {
+        if (booster.name !== "Free Energy") {
+          const newCount = totalCount - cost;
+          setTotalCount(newCount);
+          await incrementCoins(user?.id || 1, -cost);
+        }
+
+        switch (booster.name) {
+          case "Free Energy":
+            setLastFreeEnergyTime(Date.now());
+            setFreeEnergyUses((uses) => uses + 1);
+            setCurrentEnergy(maxEnergy);
+            break;
+          case "Coins per Tap":
+            const newIncrementBy = incrementBy + 1;
+            const newIncrementByCost = incrementByCost * 2;
+            setIncrementBy(newIncrementBy);
+            setIncrementByCost(newIncrementByCost);
+            await incrementCoinsPerTap(
+              user?.id || 1,
+              newIncrementBy,
+              newIncrementByCost
+            );
+            break;
+          case "Max Energy Limit":
+            const newMaxEnergy = maxEnergy + 500;
+            const newMaxEnergyLevel = maxEnergyLevel + 1;
+            const newMaxEnergyCost = maxEnergyCost * 2;
+            setMaxEnergy(newMaxEnergy);
+            setMaxEnergyLevel(newMaxEnergyLevel);
+            setMaxEnergyCost(newMaxEnergyCost);
+            await incrementMaxEnergyLimit(
+              user?.id || 1,
+              newMaxEnergy,
+              newMaxEnergyLevel,
+              newMaxEnergyCost
+            );
+            break;
+          case "Recharge Speed":
+            const newIncrementSpeed = incrementSpeed + 1;
+            const newIncrementSpeedCost = incrementSpeedCost * 2;
+            setIncrementSpeed(newIncrementSpeed);
+            setIncrementSpeedCost(newIncrementSpeedCost);
+            await incrementRechargeSpeed(
+              user?.id || 1,
+              newIncrementSpeed,
+              newIncrementSpeedCost
+            );
+            break;
+          default:
+            break;
+        }
+      } finally {
+        // Ensure isSaving is set to false after the async operation completes
+        setBoosters((prevBoosters) => {
+          const updatedBoosters = [...prevBoosters];
+          updatedBoosters[index].isSaving = false;
+          return updatedBoosters;
+        });
       }
     },
     [
+      user?.id,
       boosters,
-      totalCount,
-      setTotalCount,
-      setBoosters,
-      setCurrentEnergy,
-      maxEnergy,
-      setIncrementBy,
-      setMaxEnergy,
-      setIncrementSpeed,
       boosterCosts,
+      totalCount,
+      maxEnergy,
+      maxEnergyLevel,
+      maxEnergyCost,
+      incrementBy,
+      incrementByCost,
+      incrementSpeed,
+      incrementSpeedCost,
+      setBoosters,
+      setTotalCount,
+      setMaxEnergy,
+      setMaxEnergyLevel,
+      setMaxEnergyCost,
+      setCurrentEnergy,
+      setIncrementBy,
+      setIncrementByCost,
+      setIncrementSpeed,
+      setIncrementSpeedCost,
       isBoosterDisabled,
     ]
   );
+
+  useEffect(() => {
+    // Set the initial level of "Coins per Tap" booster based on incrementBy
+    const updatedBoosters = boosters.map((booster) => {
+      if (booster.name === "Coins per Tap") {
+        return {
+          ...booster,
+          currentLevel: incrementBy || 1,
+          cost: incrementByCost || 500,
+        };
+      } else if (booster.name === "Recharge Speed") {
+        return {
+          ...booster,
+          currentLevel: incrementSpeed || 1,
+          cost: incrementSpeedCost || 500,
+        };
+      } else if (booster.name === "Max Energy Limit") {
+        return {
+          ...booster,
+          currentLevel: maxEnergyLevel || 1,
+          cost: maxEnergyCost || 500,
+        };
+      }
+      return booster;
+    });
+
+    setBoosters(updatedBoosters);
+  }, [
+    maxEnergyLevel,
+    maxEnergyCost,
+    incrementBy,
+    incrementByCost,
+    incrementSpeed,
+    incrementSpeedCost,
+    setBoosters,
+  ]);
 
   return (
     <div className='container mx-auto px-4 py-8 max-w-md'>
@@ -214,11 +318,15 @@ const BoostPage = () => {
             >
               <ChevronRightIcon className='w-6' />
             </button>
+            {booster.isSaving && (
+              <div className='flex gap-1 text-xs bg-gray-100 p-1 rounded-md fixed top-2 left-2'>
+                <Spinner size={5} />
+                Saving ...
+              </div>
+            )}
           </div>
         ))}
       </div>
-
-      <NavLinks />
     </div>
   );
 };

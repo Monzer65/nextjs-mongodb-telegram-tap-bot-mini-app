@@ -11,18 +11,28 @@ import Pie from "./Pie";
 
 export const coinsAtom = atom(0);
 export const maxEnergyAtom = atom(1000);
+export const maxEnergyLevelAtom = atom(1);
+export const maxEnergyCostAtom = atom(1000);
 export const currentEnergyAtom = atom(900);
 export const incrementByAtom = atom(1);
+export const incrementByCostAtom = atom(500);
 export const incrementSpeedAtom = atom(10);
+export const incrementSpeedCostAtom = atom(500);
 const DEBOUNCE_DELAY = 3000;
 
 const Coin = () => {
   const { user } = useTelegram();
   const [totalCount, setTotalCount] = useAtom(coinsAtom);
   const [maxEnergy, setMaxEnergy] = useAtom(maxEnergyAtom);
+  const [maxEnergyLevel, setMaxEnergyLevel] = useAtom(maxEnergyLevelAtom);
+  const [maxEnergyCost, setMaxEnergyCost] = useAtom(maxEnergyCostAtom);
   const [currentEnergy, setCurrentEnergy] = useAtom(currentEnergyAtom);
-  const [incrementBy] = useAtom(incrementByAtom);
-  const [incrementSpeed] = useAtom(incrementSpeedAtom);
+  const [incrementBy, setIncrementBy] = useAtom(incrementByAtom);
+  const [incrementByCost, setIncrementByCost] = useAtom(incrementByCostAtom);
+  const [incrementSpeed, setIncrementSpeed] = useAtom(incrementSpeedAtom);
+  const [incrementSpeedCost, setIncrementSpeedCost] = useAtom(
+    incrementSpeedCostAtom
+  );
   const [batchedIncrements, setBatchedIncrements] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -51,11 +61,17 @@ const Coin = () => {
       const data = await response.json();
       if (response.ok) {
         setTotalCount(data.coins);
+        setMaxEnergy(data.maxEnergy);
+        setMaxEnergyLevel(data.maxEnergyLevel);
+        setMaxEnergyCost(data.maxEnergyCost);
+        setIncrementBy(data.incrementBy);
+        setIncrementByCost(data.incrementByCost);
+        setIncrementSpeed(data.incrementSpeed);
+        setIncrementSpeedCost(data.incrementSpeedCost);
         // setProgress({
         //   percentage: data.progress ?? 100,
         //   colour: data.colour ?? "hsl(120, 60%, 45%)",
         // });
-        // setMaxEnergy(data.maxEnergy ?? maxEnergy);
       } else {
         console.error("Failed to fetch initial coins", data.error);
       }
@@ -151,7 +167,7 @@ const Coin = () => {
   // console.log("newperc", (currentEnergy * 100) / maxEnergy);
 
   useEffect(() => {
-    if (currentEnergy >= maxEnergy) return;
+    if (currentEnergy >= maxEnergy) return setCurrentEnergy(maxEnergy);
 
     const interval = setInterval(() => {
       setCurrentEnergy((prevEnergy) => {
@@ -189,6 +205,9 @@ const Coin = () => {
       </p>
       <button onClick={handleCoinClick} className='rounded-full m-auto'>
         <span className='sr-only'>Add Coins</span>
+        <span>
+          {currentEnergy}/{maxEnergy}
+        </span>
         <Pie percentage={progress.percentage} colour={progress.colour} />
       </button>
       {isSaving && (

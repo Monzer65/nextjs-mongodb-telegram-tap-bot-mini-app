@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./bot.css";
 // import { BalanceStoreProvider } from "@/providers/balance-store-provider";
 import { TelegramProvider } from "../contexts/TelegramProvider";
+import NavLinks from "../components/NavigationBar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,6 +22,8 @@ export default function BotLayout({
       <TelegramProvider>
         {/* <BalanceStoreProvider> */}
         {children}
+        <NavLinks />
+
         {/* </BalanceStoreProvider> */}
       </TelegramProvider>
     </main>
