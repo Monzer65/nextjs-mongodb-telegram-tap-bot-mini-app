@@ -254,6 +254,7 @@ const BoostPage = () => {
     incrementByCost,
     incrementSpeed,
     incrementSpeedCost,
+    boosters,
     setBoosters,
   ]);
 
