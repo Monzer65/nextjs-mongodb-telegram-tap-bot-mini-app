@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  boostersAtom,
   coinsAtom,
   currentEnergyAtom,
   incrementByAtom,
@@ -10,7 +11,8 @@ import {
   maxEnergyAtom,
   maxEnergyCostAtom,
   maxEnergyLevelAtom,
-} from "@/app/components/Coin";
+} from "@/app/atoms/atoms";
+
 import Spinner from "@/app/components/Spinner";
 import TimeCounter from "@/app/components/TimeCounter";
 import { useTelegram } from "@/app/contexts/TelegramProvider";
@@ -21,56 +23,9 @@ import {
   incrementRechargeSpeed,
 } from "@/app/lib/actions";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import Image from "next/image";
 import { useState, useCallback, useMemo, useEffect } from "react";
-
-export const boostersAtom = atom([
-  {
-    name: "Free Energy",
-    image: "/solar-energy.gif",
-    maxLevels: 6,
-    currentLevel: 1,
-    cost: 0,
-    disabled: false,
-    isSaving: false,
-  },
-  {
-    name: "Coins per Tap",
-    image: "/tap-gesture.gif",
-    maxLevels: 20,
-    currentLevel: 1,
-    cost: 500,
-    disabled: false,
-    isSaving: false,
-  },
-  {
-    name: "Max Energy Limit",
-    image: "/battery.gif",
-    maxLevels: 20,
-    currentLevel: 1,
-    cost: 500,
-    disabled: false,
-    isSaving: false,
-  },
-  {
-    name: "Recharge Speed",
-    image: "/bolt.gif",
-    maxLevels: 15,
-    currentLevel: 1,
-    cost: 3000,
-    disabled: false,
-    isSaving: false,
-  },
-]);
-
-// Derived atoms for easier state management
-export const currentBoosterLevelsAtom = atom((get) =>
-  get(boostersAtom).map((booster) => booster.currentLevel)
-);
-export const currentBoosterCostsAtom = atom((get) =>
-  get(boostersAtom).map((booster) => booster.cost)
-);
 
 const BoostPage = () => {
   const [totalCount, setTotalCount] = useAtom(coinsAtom);

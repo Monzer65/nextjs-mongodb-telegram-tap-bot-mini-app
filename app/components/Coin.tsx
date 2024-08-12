@@ -9,16 +9,18 @@ import { useTelegram } from "../contexts/TelegramProvider";
 import { CurrencyYenIcon } from "@heroicons/react/24/outline";
 import Pie from "./Pie";
 import LoadingSpinner from "./LoadingSpinner";
+import {
+  coinsAtom,
+  currentEnergyAtom,
+  incrementByAtom,
+  incrementByCostAtom,
+  incrementSpeedAtom,
+  incrementSpeedCostAtom,
+  maxEnergyAtom,
+  maxEnergyCostAtom,
+  maxEnergyLevelAtom,
+} from "../atoms/atoms";
 
-export const coinsAtom = atom(0);
-export const maxEnergyAtom = atom(1000);
-export const maxEnergyLevelAtom = atom(1);
-export const maxEnergyCostAtom = atom(1000);
-export const currentEnergyAtom = atom(900);
-export const incrementByAtom = atom(1);
-export const incrementByCostAtom = atom(500);
-export const incrementSpeedAtom = atom(10);
-export const incrementSpeedCostAtom = atom(500);
 const DEBOUNCE_DELAY = 3000;
 
 const Coin = () => {
