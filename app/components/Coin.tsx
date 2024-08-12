@@ -81,7 +81,17 @@ const Coin = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, setTotalCount]);
+  }, [
+    user?.id,
+    setMaxEnergy,
+    setMaxEnergyCost,
+    setMaxEnergyLevel,
+    setIncrementBy,
+    setIncrementByCost,
+    setIncrementSpeedCost,
+    setIncrementSpeed,
+    setTotalCount,
+  ]);
 
   useEffect(() => {
     fetchInitialCoins();
