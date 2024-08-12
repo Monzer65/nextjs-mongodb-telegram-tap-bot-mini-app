@@ -19,13 +19,8 @@ export default function BotLayout({
 }>) {
   return (
     <main className={inter.className}>
-      <TelegramProvider>
-        {/* <BalanceStoreProvider> */}
-        {children}
-        <NavLinks />
-
-        {/* </BalanceStoreProvider> */}
-      </TelegramProvider>
+      <TelegramProvider>{children}</TelegramProvider>
+      <NavLinks />
     </main>
   );
 }

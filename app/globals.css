@@ -26,28 +26,6 @@
   }
 }
 
-.coin_number_per_tap {
-  padding: 10px;
-  background-color: gold;
-  color: white;
-  border-radius: 20px;
-  font-size: 16px;
-  font-weight: 600;
-  z-index: 9999;
-  user-select: none;
-}
-
-/* @keyframes float {
-  0% {
-    opacity: 1;
-    transform: translateY(0) translateX(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-50px) translateX(-10px);
-  }
-} */
-
 .filter-green {
   filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg)
     brightness(118%) contrast(119%);

@@ -40,11 +40,11 @@ const BoostPage = () => {
     incrementSpeedCostAtom
   );
   const [boosters, setBoosters] = useAtom(boostersAtom);
-  const [lastFreeEnergyTime, setLastFreeEnergyTime] = useState<number>(0);
-  const [freeEnergyUses, setFreeEnergyUses] = useState<number>(0);
+  const [lastFreeEnergyTime, setLastFreeEnergyTime] = useState(0);
+  const [freeEnergyUses, setFreeEnergyUses] = useState(0);
   const { user } = useTelegram();
 
-  // Memoized calculations for level and cost
+  // Memoized values for booster levels and costs
   const boosterLevels = useMemo(
     () => boosters.map((booster) => booster.currentLevel),
     [boosters]
@@ -58,8 +58,7 @@ const BoostPage = () => {
   const isBoosterDisabled = useCallback(
     (booster: any, totalCount: number) => {
       if (booster.name === "Free Energy") {
-        const now = Date.now();
-        const timeSinceLastUse = now - lastFreeEnergyTime;
+        const timeSinceLastUse = Date.now() - lastFreeEnergyTime;
         const hoursSinceLastUse = timeSinceLastUse / (1000 * 60 * 60);
         return freeEnergyUses >= booster.maxLevels || hoursSinceLastUse < 2;
       }
@@ -73,26 +72,25 @@ const BoostPage = () => {
   const handleBoosterClick = useCallback(
     async (index: number) => {
       const booster = boosters[index];
+      if (isBoosterDisabled(booster, totalCount)) return;
+
       const cost = boosterCosts[index];
-
-      if (isBoosterDisabled(booster, totalCount)) {
-        return;
-      }
-
-      const updatedBoosters = [...boosters];
-      updatedBoosters[index] = {
-        ...booster,
-        currentLevel: booster.currentLevel + 1,
-        cost: booster.name === "Free Energy" ? 0 : booster.cost * 2,
-        isSaving: true, // Set isSaving to true before the async operation
-      };
+      const updatedBoosters = boosters.map((item, i) =>
+        i === index
+          ? {
+              ...item,
+              currentLevel: item.currentLevel + 1,
+              cost: item.name === "Free Energy" ? 0 : item.cost * 2,
+              isSaving: true,
+            }
+          : item
+      );
 
       setBoosters(updatedBoosters);
 
       try {
         if (booster.name !== "Free Energy") {
-          const newCount = totalCount - cost;
-          setTotalCount(newCount);
+          setTotalCount((prevCount) => prevCount - cost);
           await incrementCoins(user?.id || 1, -cost);
         }
 
@@ -104,50 +102,45 @@ const BoostPage = () => {
             break;
           case "Coins per Tap":
             const newIncrementBy = incrementBy + 1;
-            const newIncrementByCost = incrementByCost * 2;
             setIncrementBy(newIncrementBy);
-            setIncrementByCost(newIncrementByCost);
+            setIncrementByCost(incrementByCost * 2);
             await incrementCoinsPerTap(
               user?.id || 1,
               newIncrementBy,
-              newIncrementByCost
+              incrementByCost * 2
             );
             break;
           case "Max Energy Limit":
             const newMaxEnergy = maxEnergy + 500;
-            const newMaxEnergyLevel = maxEnergyLevel + 1;
-            const newMaxEnergyCost = maxEnergyCost * 2;
             setMaxEnergy(newMaxEnergy);
-            setMaxEnergyLevel(newMaxEnergyLevel);
-            setMaxEnergyCost(newMaxEnergyCost);
+            setMaxEnergyLevel((prevLevel) => prevLevel + 1);
+            setMaxEnergyCost(maxEnergyCost * 2);
             await incrementMaxEnergyLimit(
               user?.id || 1,
               newMaxEnergy,
-              newMaxEnergyLevel,
-              newMaxEnergyCost
+              maxEnergyLevel + 1,
+              maxEnergyCost * 2
             );
             break;
           case "Recharge Speed":
             const newIncrementSpeed = incrementSpeed + 1;
-            const newIncrementSpeedCost = incrementSpeedCost * 2;
             setIncrementSpeed(newIncrementSpeed);
-            setIncrementSpeedCost(newIncrementSpeedCost);
+            setIncrementSpeedCost(incrementSpeedCost * 2);
             await incrementRechargeSpeed(
               user?.id || 1,
               newIncrementSpeed,
-              newIncrementSpeedCost
+              incrementSpeedCost * 2
             );
             break;
           default:
             break;
         }
       } finally {
-        // Ensure isSaving is set to false after the async operation completes
-        setBoosters((prevBoosters) => {
-          const updatedBoosters = [...prevBoosters];
-          updatedBoosters[index].isSaving = false;
-          return updatedBoosters;
-        });
+        setBoosters((prevBoosters) =>
+          prevBoosters.map((item, i) =>
+            i === index ? { ...item, isSaving: false } : item
+          )
+        );
       }
     },
     [
@@ -177,28 +170,29 @@ const BoostPage = () => {
   );
 
   useEffect(() => {
-    // Set the initial level of "Coins per Tap" booster based on incrementBy
     const updatedBoosters = boosters.map((booster) => {
-      if (booster.name === "Coins per Tap") {
-        return {
-          ...booster,
-          currentLevel: incrementBy || 1,
-          cost: incrementByCost || 500,
-        };
-      } else if (booster.name === "Recharge Speed") {
-        return {
-          ...booster,
-          currentLevel: incrementSpeed || 1,
-          cost: incrementSpeedCost || 500,
-        };
-      } else if (booster.name === "Max Energy Limit") {
-        return {
-          ...booster,
-          currentLevel: maxEnergyLevel || 1,
-          cost: maxEnergyCost || 500,
-        };
+      switch (booster.name) {
+        case "Coins per Tap":
+          return {
+            ...booster,
+            currentLevel: incrementBy || 1,
+            cost: incrementByCost || 500,
+          };
+        case "Recharge Speed":
+          return {
+            ...booster,
+            currentLevel: incrementSpeed || 1,
+            cost: incrementSpeedCost || 500,
+          };
+        case "Max Energy Limit":
+          return {
+            ...booster,
+            currentLevel: maxEnergyLevel || 1,
+            cost: maxEnergyCost || 500,
+          };
+        default:
+          return booster;
       }
-      return booster;
     });
 
     setBoosters(updatedBoosters);

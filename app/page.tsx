@@ -1,10 +1,9 @@
-import Link from "next/link";
+import LandingPage from "./components/Landing";
 
 export default function Home() {
   return (
     <div>
-      Home Page
-      <Link href={"/bot"}>Bot</Link>
+      <LandingPage />
     </div>
   );
 }
