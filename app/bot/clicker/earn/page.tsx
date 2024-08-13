@@ -1,7 +1,10 @@
+"use client";
+import { useUserState } from "@/app/states/userData";
 import Image from "next/image";
 import Link from "next/link";
 
 const EarnPage = () => {
+  const { data } = useUserState();
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6'>
       <div className='bg-white shadow-lg rounded-lg p-8 text-center max-w-md mx-auto'>
@@ -15,7 +18,7 @@ const EarnPage = () => {
           />
         </div>
         <h1 className='text-3xl font-bold text-gray-800 mb-2'>
-          Under Construction
+          Under Construction / {data.data?.coins}
         </h1>
         <p className='text-gray-600 mb-4'>
           We&apos;re working hard to bring you something amazing. Stay tuned!

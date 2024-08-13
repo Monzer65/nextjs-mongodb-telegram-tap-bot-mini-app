@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import { merriWeatherForBody } from "./lib/fonts";
 
 export const metadata: Metadata = {
-  title: "Coin Stone App",
-  description: "Open the App in Telegram and Earn Coin Stone by Tap.",
+  title: "ScoreBoard App By GoalRush",
+  description: "The leading Telegram web-app for Sports",
 };
 
 export default function RootLayout({
@@ -16,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <body className={inter.className}>{children}</body>
+      <body className={merriWeatherForBody.className}>{children}</body>
     </html>
   );
 }

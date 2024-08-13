@@ -1,5 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import {
+  lobsterForLogos,
+  playfairDisplayForHeadings,
+  quicksandForElements,
+} from "../lib/fonts";
 
 const LandingPage: React.FC = () => {
   return (
@@ -7,9 +12,14 @@ const LandingPage: React.FC = () => {
       {/* Header */}
       <header className='bg-gray-800 text-white py-4 shadow-md'>
         <div className='container mx-auto flex justify-between items-center px-4'>
-          <h1 className='text-3xl font-bold'>Scoreboard</h1>
+          <h1 className={`text-3xl font-bold ${lobsterForLogos.className}`}>
+            Scoreboard
+          </h1>
           <div className='flex space-x-4'>
-            <Link href='https://x.com' passHref>
+            <button
+              className=''
+              title='not working for now! try telegram channel instead'
+            >
               <Image
                 src='/twitter.svg'
                 alt='X Logo'
@@ -17,8 +27,8 @@ const LandingPage: React.FC = () => {
                 height={54}
                 className='hover:opacity-75 transition-opacity'
               />
-            </Link>
-            <Link href='https://telegram.org' passHref>
+            </button>
+            <Link href='https://t.me/ScorBoardChannel' passHref>
               <Image
                 src='/telegram.svg'
                 alt='Telegram Logo'
@@ -33,9 +43,11 @@ const LandingPage: React.FC = () => {
 
       {/* Main content */}
       <div className='flex-grow container mx-auto px-4 py-16 text-center'>
-        <h1 className='text-4xl font-bold text-gray-800 mb-8'>
+        <h2
+          className={`text-4xl font-bold text-gray-800 mb-8 ${playfairDisplayForHeadings.className}`}
+        >
           Classic Kicks, Crypto Clicks!
-        </h1>
+        </h2>
         <p className='text-lg text-gray-700 leading-relaxed tracking-wide mb-12 bg-gray-100 p-4 rounded-lg shadow-sm max-w-screen-md mx-auto'>
           Relive your favorite sports moments while earning real rewards! Tap to
           score big in our addictive mini-games and watch your earnings
@@ -43,8 +55,8 @@ const LandingPage: React.FC = () => {
         </p>
 
         <Link
-          href={"/bot"}
-          className='bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition'
+          href={"https://t.me/GoalRushBot"}
+          className={`bg-blue-500 text-white px-6 py-3 rounded-full text-lg hover:bg-blue-600 transition font-semibold ${quicksandForElements.className}`}
         >
           Start Earning Now!
         </Link>
@@ -59,8 +71,8 @@ const LandingPage: React.FC = () => {
           />
         </div>
         <Link
-          href={"/bot"}
-          className='bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition'
+          href={"https://t.me/GoalRushBot"}
+          className={`bg-blue-500 text-white px-6 py-3 rounded-full text-lg hover:bg-blue-600 transition font-semibold ${quicksandForElements.className}`}
         >
           Start Earning Now!
         </Link>

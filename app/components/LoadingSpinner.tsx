@@ -1,9 +1,16 @@
+import { lobsterForLogos } from "../lib/fonts";
+
 const LoadingSpinner = () => {
   return (
-    <div className='bg-white dark:bg-gray-800 flex justify-center items-center w-screen h-screen p-5'>
-      <div className='border border-gray-200 p-2 rounded-md shadow-lg shadow-orange-300'>
-        <div className='flex items-end gap-1'>
-          <span className='text-6xl font-semibold dark:text-white'>C</span>
+    <div className='flex justify-center items-center p-5 m-auto'>
+      <div className='border border-gray-200 p-2 rounded-md shadow-lg shadow-orange-300 bg-white'>
+        <div className={`flex items-end gap-1 ${lobsterForLogos.className}`}>
+          <span className='text-4xl min-[359px]:text-6xl lg:text-8xl font-semibold dark:text-white'>
+            S
+          </span>
+          <span className='text-4xl min-[359px]:text-6xl lg:text-8xl font-semibold dark:text-white'>
+            c
+          </span>
           <svg
             className='animate-spin'
             fill='#F97316'
@@ -18,9 +25,15 @@ const LoadingSpinner = () => {
               transform='translate(-41 -25)'
             />
           </svg>
-          <span className='text-6xl font-semibold dark:text-white'>i</span>
-          <span className='text-6xl font-semibold dark:text-white'>n</span>
-          <span className='text-6xl font-semibold text-orange-500'>St</span>
+          <span className='text-4xl min-[359px]:text-6xl lg:text-8xl font-semibold dark:text-white'>
+            r
+          </span>
+          <span className='text-4xl min-[359px]:text-6xl lg:text-8xl font-semibold dark:text-white'>
+            e
+          </span>
+          <span className='text-4xl min-[359px]:text-6xl lg:text-8xl font-semibold text-orange-500'>
+            B
+          </span>
           <svg
             className='animate-bounce'
             fill='#F97316'
@@ -35,8 +48,9 @@ const LoadingSpinner = () => {
               transform='translate(-41 -25)'
             />
           </svg>
-          <span className='text-6xl font-semibold dark:text-white'>n</span>
-          <span className='text-6xl font-semibold dark:text-white'>e</span>
+          <span className='text-4xl min-[359px]:text-6xl lg:text-8xl font-semibold dark:text-white'>
+            ard
+          </span>
         </div>
       </div>
     </div>

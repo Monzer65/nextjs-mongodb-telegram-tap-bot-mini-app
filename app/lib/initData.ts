@@ -18,7 +18,7 @@ export async function init() {
   }
 }
 
-export async function getCoins(userId: number) {
+export async function getUserData(userId: number) {
   noStore();
 
   try {
@@ -26,9 +26,9 @@ export async function getCoins(userId: number) {
 
     const user = await col.findOne({ userId });
 
-    return { coins: user?.coins || 132 };
+    return user;
   } catch (error) {
-    console.error("Error fetching coins:", error);
-    return { error: "Failed to fetch coins" };
+    console.error("Error fetching user data:", error);
+    return { error: "Failed to fetch user data" };
   }
 }
