@@ -1,29 +1,9 @@
-"use client";
-import { ObjectId } from "mongodb";
 import { createGlobalState } from ".";
+import { getUserData } from "../lib/actions";
+import { TUserData } from "../types/types";
 
-type TUserData = {
-  // _id: ObjectId;
-  userId: number;
-  coins: number;
-  incrementBy: number;
-  incrementByCost: number;
-  incrementSpeed: number;
-  incrementSpeedCost: number;
-  maxEnergy: number;
-  maxEnergyCost: number;
-  maxEnergyLevel: number;
-};
-
-export const useUserState = createGlobalState<TUserData>("userData", {
-  // _id: new ObjectId(),
-  userId: 1,
-  coins: 443,
-  incrementBy: 2,
-  incrementByCost: 10,
-  incrementSpeed: 1,
-  incrementSpeedCost: 10,
-  maxEnergy: 111,
-  maxEnergyCost: 10,
-  maxEnergyLevel: 1,
-});
+export const useUserState = (userId: number) =>
+  createGlobalState<TUserData>("userData", async () => {
+    const userData = await getUserData(userId); // Fetch user data from the database
+    return userData;
+  })();

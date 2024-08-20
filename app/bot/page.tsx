@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-// import { useUserState } from "../states/userData";
-
 // import Ball from "../components/Ball";
 // import Coin from "../components/Coin";
 // import LoadingSpinner from "../components/LoadingSpinner";

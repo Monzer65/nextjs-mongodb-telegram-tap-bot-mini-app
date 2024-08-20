@@ -16,8 +16,12 @@ function NavLinks() {
   return (
     <nav className='sticky bottom-0 left-0 right-0 z-50 mt-auto'>
       <ul className='flex text-xs bg-gray-700 text-white'>
-        <li className={`${pathname === "/bot" ? "bg-gray-900" : ""}`}>
-          <Link className={`grid place-items-center p-2`} href='/bot' passHref>
+        <li className={`${pathname === "/bot/clicker" ? "bg-gray-900" : ""}`}>
+          <Link
+            className={`grid place-items-center p-2`}
+            href='/bot/clicker'
+            passHref
+          >
             <HomeIcon className='w-6 text-blue-400' />
             Home
           </Link>
@@ -25,10 +29,12 @@ function NavLinks() {
         <li className='mx-auto'>
           <ul className='flex gap-1'>
             <li
-              className={`${pathname === "/bot/friends" ? "bg-gray-900" : ""}`}
+              className={`${
+                pathname === "/bot/clicker/friends" ? "bg-gray-900" : ""
+              }`}
             >
               <Link
-                href='/bot/friends'
+                href='/bot/clicker/friends'
                 className={`grid place-items-center p-2`}
                 passHref
               >
@@ -36,9 +42,13 @@ function NavLinks() {
                 <p className='mt-1'>Friends</p>
               </Link>
             </li>
-            <li className={`${pathname === "/bot/mine" ? "bg-gray-900" : ""}`}>
+            <li
+              className={`${
+                pathname === "/bot/clicker/mine" ? "bg-gray-900" : ""
+              }`}
+            >
               <Link
-                href='/bot/mine'
+                href='/bot/clicker/mine'
                 className={`grid place-items-center p-2`}
                 passHref
               >
@@ -53,9 +63,13 @@ function NavLinks() {
                 <p className='mt-1'>Mine</p>
               </Link>
             </li>
-            <li className={`${pathname === "/bot/earn" ? "bg-gray-900" : ""}`}>
+            <li
+              className={`${
+                pathname === "/bot/clicker/earn" ? "bg-gray-900" : ""
+              }`}
+            >
               <Link
-                href='/bot/earn'
+                href='/bot/clicker/earn'
                 className={`grid place-items-center p-2`}
                 passHref
               >
@@ -65,9 +79,13 @@ function NavLinks() {
             </li>
           </ul>
         </li>
-        <li className={`${pathname === "/bot/boost" ? "bg-gray-900" : ""}`}>
+        <li
+          className={`${
+            pathname === "/bot/clicker/boost" ? "bg-gray-900" : ""
+          }`}
+        >
           <Link
-            href='/bot/boost'
+            href='/bot/clicker/boost'
             className={`grid place-items-center p-2`}
             passHref
           >

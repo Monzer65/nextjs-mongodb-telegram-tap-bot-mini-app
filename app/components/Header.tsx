@@ -2,7 +2,7 @@
 
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
-import { coinsAtom } from "../atoms/atoms";
+import { coinsAtom } from "../lib/atoms";
 
 const LEVELS = [
   { name: "Novice Navigator", minPoint: 0 },

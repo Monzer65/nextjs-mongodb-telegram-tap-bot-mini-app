@@ -1,15 +1,15 @@
-"use client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function createGlobalState<T>(
   queryKey: unknown,
-  initialData: T | null = null
+  fetchFn: () => Promise<T>
 ) {
   return function () {
     const queryClient = useQueryClient();
-    const data = useQuery({
+
+    const { data, isLoading, isError } = useQuery({
       queryKey: [queryKey],
-      queryFn: () => Promise.resolve(initialData),
+      queryFn: fetchFn,
       refetchInterval: false,
       refetchOnMount: false,
       refetchOnWindowFocus: false,
@@ -18,7 +18,10 @@ export function createGlobalState<T>(
     });
 
     function setData(data: Partial<T>) {
-      queryClient.setQueryData([queryKey], data);
+      queryClient.setQueryData([queryKey], (prevData: T | undefined) => ({
+        ...prevData,
+        ...data,
+      }));
     }
 
     function resetData() {
@@ -29,6 +32,7 @@ export function createGlobalState<T>(
         queryKey: [queryKey],
       });
     }
-    return { data, setData, resetData };
+
+    return { data, isLoading, isError, setData, resetData };
   };
 }

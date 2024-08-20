@@ -46,9 +46,9 @@ const TimeCounter = ({
   };
 
   return (
-    <div>
+    <>
       <p className='text-lg font-semibold'>{formatTime(timeRemaining)}</p>
-    </div>
+    </>
   );
 };
 

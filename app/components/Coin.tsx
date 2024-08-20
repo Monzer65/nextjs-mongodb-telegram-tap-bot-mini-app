@@ -19,7 +19,7 @@ import {
   maxEnergyAtom,
   maxEnergyCostAtom,
   maxEnergyLevelAtom,
-} from "../atoms/atoms";
+} from "../lib/atoms";
 
 const DEBOUNCE_DELAY = 3000;
 

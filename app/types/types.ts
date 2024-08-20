@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb";
+
 export interface ITelegramUser {
   id: number;
   first_name: string;
@@ -85,3 +87,23 @@ export interface IBooster {
   errorMessage?: string;
   onClick: (cost: number) => void;
 }
+
+export interface IUserData {
+  _id: ObjectId;
+  tel_user_id: number;
+  coins: number;
+  level: string;
+  increment_amount: number;
+  increment_cost: number;
+  increment_level: number;
+  speed: number;
+  speed_cost: number;
+  speed_level: number;
+  max_energy: number;
+  max_energy_cost: number;
+  max_energy_level: number;
+  current_energy: number;
+  last_time_free_energy_used: Date;
+}
+
+export type TUserData = IUserData | { error: string };

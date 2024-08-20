@@ -1,7 +1,11 @@
+"use client";
+import { getUserData } from "@/app/lib/actions";
 import Image from "next/image";
 import Link from "next/link";
 
 const FriendsPage = () => {
+  const data = getUserData(1);
+  console.log(data);
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6'>
       <div className='bg-white shadow-lg rounded-lg p-8 text-center max-w-md mx-auto'>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./clicker.css";
-import QUeryProviders from "@/app/contexts/QueryProvider";
+import TanstackQueryProvider from "@/app/contexts/QueryProvider";
 
 export const metadata: Metadata = {
   title: "telegram clicker mini game for ScoreBoard of GoalRush app",
@@ -13,8 +13,8 @@ export default function BotLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main>
-      <QUeryProviders>{children}</QUeryProviders>
+    <main className='bg-gray-800 text-white'>
+      <TanstackQueryProvider>{children}</TanstackQueryProvider>
     </main>
   );
 }
