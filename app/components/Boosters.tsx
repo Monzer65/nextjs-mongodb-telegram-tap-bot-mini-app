@@ -12,9 +12,11 @@ import {
   UpdateEnergy,
 } from "../lib/actions";
 import { playfairDisplayForHeadings } from "../lib/fonts";
+import { useTelegram } from "../contexts/TelegramProvider";
 
 const Boosters = () => {
-  const { data, isLoading, isError, setData } = useUserState(7);
+  const { user } = useTelegram();
+  const { data, isLoading, isError, setData } = useUserState(user?.id || 1);
 
   const [isLoadingFreeEnergy, setIsLoadingFreeEnergy] = useState(false);
   const [isLoadingIncrementAmount, setIsLoadingIncrementAmount] =
@@ -109,7 +111,10 @@ const Boosters = () => {
       });
       setLastFreeEnergyTime(new Date());
 
-      updateCurrentEnergy.mutate({ userId: 7, energy: updatedEnergy });
+      updateCurrentEnergy.mutate({
+        userId: user?.id || 1,
+        energy: updatedEnergy,
+      });
     }
   };
 
@@ -135,7 +140,7 @@ const Boosters = () => {
           increment_cost: incrementCost,
         });
 
-        updateIncrementAmount.mutate({ userId: 7 });
+        updateIncrementAmount.mutate({ userId: user?.id || 1 });
       }
     }
   };
@@ -162,7 +167,7 @@ const Boosters = () => {
           max_energy_cost: incrementCost,
         });
 
-        updateMaxEnergy.mutate({ userId: 7 });
+        updateMaxEnergy.mutate({ userId: user?.id || 1 });
       }
     }
   };

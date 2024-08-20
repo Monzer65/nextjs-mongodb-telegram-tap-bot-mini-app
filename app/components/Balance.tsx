@@ -23,7 +23,7 @@ export default function Balance() {
   const [batchedIncrements, setBatchedIncrements] = useState(0);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const { data, isLoading, isError, setData } = useUserState(7);
+  const { data, isLoading, isError, setData } = useUserState(user?.id || 1);
 
   const increment = useMutation({
     mutationFn: async ({ userId, coins }: { userId: number; coins: number }) =>
@@ -37,7 +37,7 @@ export default function Balance() {
     if (batchedIncrements > 0) {
       setIsSaving(true);
       debounceTimeout.current = setTimeout(() => {
-        increment.mutate({ userId: 7, coins: batchedIncrements });
+        increment.mutate({ userId: user?.id || 1, coins: batchedIncrements });
 
         setBatchedIncrements(0);
         setIsSaving(false);
