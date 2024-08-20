@@ -1,129 +1,38 @@
 "use client";
 
 import Link from "next/link";
-// import Ball from "../components/Ball";
-// import Coin from "../components/Coin";
-// import LoadingSpinner from "../components/LoadingSpinner";
-// import NavLinks from "../components/NavigationBar";
-// import { useTelegram } from "../contexts/TelegramProvider";
-// import netImage from "../../public/net-769px.jpg";
-// import { useEffect, useState } from "react";
-// import { useAtom } from "jotai";
-// import {
-//   userIdAtom,
-//   coinsAtom,
-//   incrementByAtom,
-//   incrementByCostAtom,
-//   incrementSpeedAtom,
-//   incrementSpeedCostAtom,
-//   maxEnergyAtom,
-//   maxEnergyCostAtom,
-//   maxEnergyLevelAtom,
-// } from "../lib/atoms";
 
 const BotHome = () => {
-  // const [, setUserId] = useAtom(userIdAtom);
-  // const [, setCoins] = useAtom(coinsAtom);
-  // const [, setIncrementBy] = useAtom(incrementByAtom);
-  // const [, setIncrementByCost] = useAtom(incrementByCostAtom);
-  // const [, setIncrementSpeed] = useAtom(incrementSpeedAtom);
-  // const [, setIncrementSpeedCost] = useAtom(incrementSpeedCostAtom);
-  // const [, setMaxEnergy] = useAtom(maxEnergyAtom);
-  // const [, setMaxEnergyCost] = useAtom(maxEnergyCostAtom);
-  // const [, setMaxEnergyLevel] = useAtom(maxEnergyLevelAtom);
-  // const { user } = useTelegram();
-  // const [loading, setLoading] = useState(true);
-
-  // useEffect(() => {
-  //   const fetchInitialCoins = async () => {
-  //     try {
-  //       const userId = user?.id || 1;
-  //       const response = await fetch("/api/bot/userData", {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({ userId }),
-  //       });
-
-  //       const data = await response.json();
-
-  //       // Update the global state with the fetched data
-  //       setUserId(data.userId);
-  //       setCoins(data.coins);
-  //       setIncrementBy(data.incrementBy);
-  //       setIncrementByCost(data.incrementByCost);
-  //       setIncrementSpeed(data.incrementSpeed);
-  //       setIncrementSpeedCost(data.incrementSpeedCost);
-  //       setMaxEnergy(data.maxEnergy);
-  //       setMaxEnergyCost(data.maxEnergyCost);
-  //       setMaxEnergyLevel(data.maxEnergyLevel);
-  //     } catch (error) {
-  //       console.error("Failed to fetch initial coins", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchInitialCoins();
-  // }, [
-  //   user?.id,
-  //   setCoins,
-  //   setIncrementBy,
-  //   setIncrementByCost,
-  //   setIncrementSpeed,
-  //   setIncrementSpeedCost,
-  //   setMaxEnergy,
-  //   setMaxEnergyCost,
-  //   setMaxEnergyLevel,
-  //   setUserId,
-  // ]);
-
-  // const { data, setData } = useUserState();
-  // function incrementCoins() {
-  //   return setData({
-  //     coins:
-  //       data.data === undefined || data.data === null
-  //         ? 123
-  //         : data.data.coins + data.data.incrementBy,
-  //   });
-  // }
   return (
-    <>
-      <div>Bot Home Page</div>
-      <div className='p-2 bg-blue-700 text-white rounded-md'>
-        <Link href={"/bot/clicker"}>Clicker</Link>
+    <div className='flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4'>
+      <h1 className='text-4xl font-bold mb-8 text-center'>
+        Welcome to ScoreBoard Bot
+      </h1>
+      <p className='text-lg mb-8 max-w-lg text-center'>
+        Dive into our interactive bot experience! Click below to start playing
+        and earning rewards.
+      </p>
+      <div className='p-4 bg-white text-blue-700 rounded-lg shadow-lg transform transition-transform hover:scale-105'>
+        <Link href='/bot/clicker' className='text-2xl font-semibold'>
+          Go to Clicker
+        </Link>
       </div>
-      {/* <div>{data?.data?.coins}</div>
-      <button onClick={incrementCoins}>Click</button>
-      <Link href={"/bot/earn"}>Earn</Link> */}
-      {/* {user || loading ? (
-        <div
-          style={{
-            backgroundImage: `url(${netImage.src})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            width: "100%",
-            height: "100%",
-          }}
-          className='grid place-items-center min-h-screen'
-        >
-          <LoadingSpinner />
-        </div>
-      ) : (
-        <div className='bg-gray-800 grid min-h-screen'>
-          <Ball />
-          <p>
-            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Optio
-            provident quia enim veniam doloribus! Maiores, repellendus aliquam
-            quos alias quibusdam eligendi debitis, soluta vitae beatae ratione
-            reprehenderit modi. Beatae, quaerat!
-          </p>
-          <NavLinks />
-        </div>
-      )} */}
-    </>
+      <div className='mt-8 p-4 bg-yellow-400 text-gray-900 rounded-lg shadow-lg'>
+        <h2 className='text-2xl font-bold mb-2'>
+          Exciting Features Coming Soon!
+        </h2>
+        <p className='text-lg'>
+          Beyond the Clicker game, get ready for live sports news, media
+          highlights, match schedules, player stats, and much more. Stay tuned
+          as we bring you the ultimate sports hub!
+        </p>
+      </div>
+
+      <footer className='sticky bottom-4 text-sm text-gray-200 bg-slate-800 p-2 mt-2'>
+        {/* <p>&copy; 2024 GoalRush. All rights reserved.</p> */}
+        <p>Powered by GoalRush&reg;&copy;</p>
+      </footer>
+    </div>
   );
 };
 

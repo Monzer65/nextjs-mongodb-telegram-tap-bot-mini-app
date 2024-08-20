@@ -1,6 +1,6 @@
 import { lobsterForLogos } from "../lib/fonts";
 
-const LoadingSpinner = () => {
+const InitialLoading = () => {
   return (
     <div className='flex justify-center items-center p-5 m-auto'>
       <div className='border border-gray-200 p-2 rounded-md shadow-lg shadow-orange-300 bg-white'>
@@ -57,4 +57,4 @@ const LoadingSpinner = () => {
   );
 };
 
-export default LoadingSpinner;
+export default InitialLoading;

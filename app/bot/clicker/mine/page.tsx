@@ -1,9 +1,17 @@
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 
 const MinePage = () => {
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6'>
+      <Link
+        href={"/bot/clicker"}
+        className='text-black flex items-center place-self-start'
+      >
+        <ArrowLeftIcon className='w-8' />
+        <span>Back to clicker</span>
+      </Link>
       <div className='bg-white shadow-lg rounded-lg p-8 text-center max-w-md mx-auto'>
         <div className='mb-6'>
           <Image
@@ -28,7 +36,7 @@ const MinePage = () => {
             Home
           </Link>
           <Link
-            href='/bot'
+            href='/contact'
             className='bg-gray-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-600 transition duration-300'
           >
             Contact Us

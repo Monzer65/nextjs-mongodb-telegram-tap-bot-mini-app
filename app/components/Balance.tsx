@@ -9,11 +9,13 @@ import {
   determineCurrentLevel,
   LEVELS,
 } from "../lib/determineLevel";
-import LoadingSpinner from "./LoadingSpinner";
 import Spinner from "./Spinner";
 import EnergyProgress from "./EnergyProgress";
 import Image from "next/image";
 import netImage from "@/public/net-769px.jpg";
+import InitialLoading from "./InitialLoading";
+import Link from "next/link";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 export default function Balance() {
   const { user } = useTelegram();
@@ -21,7 +23,7 @@ export default function Balance() {
   const [batchedIncrements, setBatchedIncrements] = useState(0);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const { data, isLoading, isError, setData, resetData } = useUserState(7);
+  const { data, isLoading, isError, setData } = useUserState(7);
 
   const increment = useMutation({
     mutationFn: async ({ userId, coins }: { userId: number; coins: number }) =>
@@ -99,7 +101,7 @@ export default function Balance() {
     : "Max Level";
 
   return (
-    <>
+    <div className='p-4'>
       {user ? (
         <div
           style={{
@@ -112,7 +114,11 @@ export default function Balance() {
           }}
           className='absolute inset-0 z-[999999] grid place-items-center min-h-screen text-gray-800'
         >
-          <LoadingSpinner />
+          <Link href={"/bot"} className='px-4 pt-2'>
+            <span className='sr-only'>Back to Bot Home Page</span>
+            <ArrowLeftIcon className='w-6' />
+          </Link>
+          <InitialLoading />
         </div>
       ) : (
         <>
@@ -121,19 +127,32 @@ export default function Balance() {
           ) : (
             <>
               {isError ? (
-                <div>Error occured; try refresh the page later</div>
+                <div>
+                  <Link href={"/bot"} className='px-4 pt-2'>
+                    <span className='sr-only'>Back to Bot Home Page</span>
+                    <ArrowLeftIcon className='w-6' />
+                  </Link>
+                  Error occured; try refresh the page later
+                </div>
               ) : (
                 <>
-                  <div>User Data</div>
-                  <div>
-                    <pre>{JSON.stringify(data, null, 3)}</pre>
+                  <Link href={"/bot"} className='mb-2 flex items-center'>
+                    <ArrowLeftIcon className='w-6' />
+                    <span className='text-xs'>Back to Bot Home Page</span>
+                  </Link>
+                  <header className='shadow-lg shadow-yellow-300 rounded-md p-1'>
+                    <p>welcome username</p>
+                    <div className='mt-4 w-full'>
+                      <div className='flex justify-between text-[8px]'>
+                        <span className='whitespace-nowrap'>
+                          Current Level: {currentLevelName}
+                        </span>
+                        <span className='whitespace-nowrap'>
+                          Next: {nextLevelName}
+                        </span>
+                      </div>
 
-                    <div className='flex items-center justify-between mt-4'>
-                      <span className='text-sm text-gray-200 whitespace-nowrap'>
-                        {currentLevelName}
-                      </span>
-
-                      <div className='relative w-full mx-2 bg-gray-200 h-4 rounded-full'>
+                      <div className='relative max-w-full bg-gray-200 h-2 rounded-full'>
                         <div className='bg-gradient-to-r from-red-500 via-orange-500 to-green-500 h-full rounded-full' />
                         <div
                           className='absolute top-0 right-0 bg-gray-300 h-full rounded-full transition-all duration-500 ease-in-out'
@@ -144,19 +163,30 @@ export default function Balance() {
                           }}
                         />
                       </div>
-
-                      <span className='text-sm text-gray-200 whitespace-nowrap'>
-                        {nextLevelName}
-                      </span>
                     </div>
+                  </header>
 
-                    <button onClick={handleCoinClick} className='border'>
+                  <div className='grid place-items-center w-full  mt-8'>
+                    {/* <pre>{JSON.stringify(data, null, 3)}</pre> */}
+                    <div>
+                      <p>
+                        Your Balance:{" "}
+                        <span className='text-yellow-500 font-bold text-2xl'>
+                          <strong>{data ? data.coins : ""}</strong>
+                        </span>
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleCoinClick}
+                      className='w-full max-w-[400px] rounded-full'
+                    >
                       <span className='sr-only'>tap button</span>
                       <Image
                         src='/ball.svg'
                         alt='ball svg'
                         width={150}
                         height={150}
+                        className='w-full sm:w-auto m-auto rounded-full object-fill'
                       />
                     </button>
                     <EnergyProgress
@@ -164,9 +194,8 @@ export default function Balance() {
                       maxEnergy={data ? data.max_energy : 500}
                     />
                     {isSaving && (
-                      <div className='flex gap-1 text-xs bg-gray-100 p-1 rounded-md fixed top-2 left-2 text-gray-800'>
-                        <Spinner size={5} />
-                        Saving ...
+                      <div className='flex items-center gap-4 text-xs bg-gray-100 p-1 rounded-md fixed top-20 left-2 text-gray-800'>
+                        <Spinner size={5} /> Saving ...
                       </div>
                     )}
                     {taps.map((tap) => (
@@ -191,6 +220,6 @@ export default function Balance() {
           )}
         </>
       )}
-    </>
+    </div>
   );
 }

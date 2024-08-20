@@ -8,7 +8,7 @@ const EnergyProgress = ({
   maxEnergy: number;
 }) => {
   return (
-    <div className='flex items-center gap-2'>
+    <div className='flex items-center gap-2 w-full'>
       <div className='flex gap-2 text-white rounded-md'>
         <BoltIcon className='w-5 text-yellow-500' />
         <p className='font-bold'>{Math.floor(currentEnergy)}</p>/

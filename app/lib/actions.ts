@@ -163,6 +163,10 @@ export async function incrementCoinsPerTap(userId: number) {
     const maxCost = 20000000;
     const totalLevels = 20;
 
+    if (userDoc.increment_level >= totalLevels) {
+      return { error: "You reached the max level!" };
+    }
+
     // Calculate cost using exponential growth
     const incrementCost = Math.round(
       minCost *
@@ -193,78 +197,128 @@ export async function incrementCoinsPerTap(userId: number) {
   }
 }
 
-export async function incrementRechargeSpeed(
-  userId: number,
-  level: number,
-  cost: number
-) {
+export async function incrementMaxEnergy(userId: number) {
   try {
     const client = await clientPromise;
     const col = client.db("fakeData").collection("telegramTapBot");
 
-    if (!userId || level == null || cost == null) {
+    if (!userId) {
       return {
-        error: "Provide user ID and level and cost",
+        error: "Provide user ID",
       };
     }
 
+    const userDoc = await col.findOne({ tel_user_id: userId });
+
+    if (!userDoc) return { error: "user not found" };
+
+    const currentLevel = userDoc.max_energy_level + 1;
+    const minCost = 5000;
+    const maxCost = 20000000;
+    const totalLevels = 20;
+
+    if (userDoc.max_energy_level >= totalLevels) {
+      return { error: "You reached the max level!" };
+    }
+
+    // Calculate cost using exponential growth
+    const incrementCost = Math.round(
+      minCost *
+        Math.pow(maxCost / minCost, (currentLevel - 1) / (totalLevels - 1))
+    );
+
     await col.updateOne(
-      { userId },
+      { tel_user_id: userId },
       {
         $set: {
-          incrementSpeed: level,
-          incrementSpeedCost: cost,
+          coins: userDoc.coins - userDoc.max_energy_cost,
+          max_energy: userDoc.max_energy + 500,
+          max_energy_level: currentLevel,
+          max_energy_cost: incrementCost,
         },
       },
       { upsert: true }
     );
 
-    return {
-      success: true,
-    };
+    return { success: true };
   } catch (error) {
     console.error("Error:", error);
-    return {
-      error: "Database Error: Failed to increment speed.",
-    };
+    return { error: "Database Error: Failed to increment max energy." };
   }
 }
 
-export async function incrementMaxEnergyLimit(
-  userId: number,
-  energy: number,
-  level: number,
-  cost: number
-) {
-  try {
-    const client = await clientPromise;
-    const col = client.db("fakeData").collection("telegramTapBot");
+// export async function incrementRechargeSpeed(
+//   userId: number,
+//   level: number,
+//   cost: number
+// ) {
+//   try {
+//     const client = await clientPromise;
+//     const col = client.db("fakeData").collection("telegramTapBot");
 
-    if (!userId || level == null || cost == null) {
-      return {
-        error: "Provide user ID and level and cost",
-      };
-    }
+//     if (!userId || level == null || cost == null) {
+//       return {
+//         error: "Provide user ID and level and cost",
+//       };
+//     }
 
-    await col.updateOne(
-      { userId },
-      {
-        $set: {
-          maxEnergy: energy,
-          maxEnergyLevel: level,
-          maxEnergyCost: cost,
-        },
-      },
-      { upsert: true }
-    );
+//     await col.updateOne(
+//       { userId },
+//       {
+//         $set: {
+//           incrementSpeed: level,
+//           incrementSpeedCost: cost,
+//         },
+//       },
+//       { upsert: true }
+//     );
 
-    return {
-      success: true,
-    };
-  } catch (error) {
-    console.error("Error:", error);
-    return {
-      error: "Database Error: Failed to update max energy.",
-    };
-  }
-}
+//     return {
+//       success: true,
+//     };
+//   } catch (error) {
+//     console.error("Error:", error);
+//     return {
+//       error: "Database Error: Failed to increment speed.",
+//     };
+//   }
+// }
+
+// export async function incrementMaxEnergyLimit(
+//   userId: number,
+//   energy: number,
+//   level: number,
+//   cost: number
+// ) {
+//   try {
+//     const client = await clientPromise;
+//     const col = client.db("fakeData").collection("telegramTapBot");
+
+//     if (!userId || level == null || cost == null) {
+//       return {
+//         error: "Provide user ID and level and cost",
+//       };
+//     }
+
+//     await col.updateOne(
+//       { userId },
+//       {
+//         $set: {
+//           maxEnergy: energy,
+//           maxEnergyLevel: level,
+//           maxEnergyCost: cost,
+//         },
+//       },
+//       { upsert: true }
+//     );
+
+//     return {
+//       success: true,
+//     };
+//   } catch (error) {
+//     console.error("Error:", error);
+//     return {
+//       error: "Database Error: Failed to update max energy.",
+//     };
+//   }
+// }

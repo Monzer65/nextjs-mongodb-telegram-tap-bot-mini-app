@@ -3,7 +3,7 @@ import "./bot.css";
 import { TelegramProvider } from "../contexts/TelegramProvider";
 
 export const metadata: Metadata = {
-  title: "Official Telegram web-app of ScoreBoard of GoalRush",
+  title: "Official Telegram web-app of ScoreBoard by GoalRush",
   description: "Open the App in Telegram Mobile and Go along.",
 };
 
