@@ -102,7 +102,7 @@ export default function Balance() {
 
   return (
     <div className='p-4'>
-      {user ? (
+      {!user ? (
         <div
           style={{
             backgroundImage: `url(${netImage.src})`,
